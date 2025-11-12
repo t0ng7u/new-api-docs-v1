@@ -1,5 +1,5 @@
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
-import { baseOptions } from '@/lib/layout.shared';
+import { baseOptions, linkItems } from '@/lib/layout.shared';
 
 export default async function Layout({
   params,
@@ -9,6 +9,15 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const { lang } = await params;
+  const base = baseOptions(lang);
 
-  return <HomeLayout {...baseOptions(lang)}>{children}</HomeLayout>;
+  return (
+    <HomeLayout
+      {...base}
+      links={[...(base.links || []), ...linkItems]}
+      className="dark:bg-neutral-950 dark:[--color-fd-background:var(--color-neutral-950)]"
+    >
+      {children}
+    </HomeLayout>
+  );
 }

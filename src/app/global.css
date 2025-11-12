@@ -1,3 +1,64 @@
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+@plugin 'tailwindcss-animate';
+
+@theme {
+  --spacing-fd-container: 1436px;
+  --color-brand: hsl(217, 91%, 60%);
+  --color-brand-foreground: white;
+  --color-brand-secondary: hsl(217, 91%, 70%);
+  --color-brand-secondary-foreground: hsl(217, 91%, 20%);
+  --color-brand-200: hsl(217, 91%, 80%);
+
+  --color-landing-foreground: #2c3e50;
+  --color-landing-foreground-200: #7f8c8d;
+}
+
+.dark {
+  --color-landing-foreground: #ecf0f1;
+  --color-landing-foreground-200: #bdc3c7;
+
+  --color-brand: hsl(217, 91%, 70%);
+  --color-brand-secondary: hsl(217, 91%, 80%);
+  --color-brand-secondary-foreground: hsl(217, 91%, 10%);
+  --color-brand-foreground: black;
+  --color-brand-200: hsl(217, 91%, 85%);
+}
+
+@theme inline {
+  --default-mono-font-family: var(--font-mono);
+  --animate-fade-in: fade-in 0.5s ease-in;
+  --animate-slide-up: slide-up 0.5s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  --color-gradient-radial: radial-gradient(circle, var(--tw-gradient-stops));
+  --color-gradient-linear: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+body {
+  overscroll-behavior-y: none;
+  background-color: var(--color-fd-background);
+  font-feature-settings:
+    'rlig' 1,
+    'calt' 1;
+}
