@@ -16,6 +16,7 @@ import { create } from '@orama/orama';
 import { useI18n } from 'fumadocs-ui/contexts/i18n';
 import { createTokenizer as createMandarinTokenizer } from '@orama/tokenizers/mandarin';
 import { createTokenizer as createJapaneseTokenizer } from '@orama/tokenizers/japanese';
+import { withBasePath } from '@/lib/base-path';
 
 function initOrama(locale?: string) {
   return create({
@@ -37,6 +38,7 @@ export default function CustomSearchDialog(props: SharedProps) {
     type: 'static',
     initOrama,
     locale,
+    from: withBasePath('/api/search'),
   });
 
   return (

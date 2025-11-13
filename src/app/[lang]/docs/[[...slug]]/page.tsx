@@ -43,7 +43,7 @@ export default async function Page(props: {
 }
 
 export async function generateStaticParams() {
-  return source.generateParams('slug', 'lang');
+  return source.generateParams();
 }
 
 export async function generateMetadata(props: {
