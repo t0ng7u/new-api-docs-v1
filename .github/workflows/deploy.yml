@@ -36,32 +36,17 @@ jobs:
       - name: 📦 Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: 🔍 Debug Environment Variables
-        run: |
-          echo "Checking environment variables..."
-          echo "GITHUB_TOKEN exists: $([[ -n "$GITHUB_TOKEN" ]] && echo 'Yes' || echo 'No')"
-          echo "AFDIAN_USER_ID exists: $([[ -n "$AFDIAN_USER_ID" ]] && echo 'Yes' || echo 'No')"
-          echo "AFDIAN_TOKEN exists: $([[ -n "$AFDIAN_TOKEN" ]] && echo 'Yes' || echo 'No')"
+      - name: 🔨 Build with Next.js
+        run: bun run build
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AFDIAN_USER_ID: ${{ secrets.AFDIAN_USER_ID }}
-          AFDIAN_TOKEN: ${{ secrets.AFDIAN_TOKEN }}
-
-      - name: 🔄 Pre-build (Generate Changelog & Special Thanks)
-        run: bun run prebuild
-        env:
-          # GitHub API Token (自动提供)
+          # GitHub API Token (自动提供，用于 prebuild 脚本)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # 源仓库配置
           SOURCE_REPO: QuantumNous/new-api
           # 爱发电 API 配置
           AFDIAN_USER_ID: ${{ secrets.AFDIAN_USER_ID }}
           AFDIAN_TOKEN: ${{ secrets.AFDIAN_TOKEN }}
-
-      - name: 🔨 Build with Next.js
-        run: bun run build
-        env:
-          # 设置 basePath 为仓库名
+          # Next.js 构建配置
           NEXT_PUBLIC_BASE_PATH: /new-api-docs-v1
           NODE_ENV: production
 
