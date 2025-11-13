@@ -156,13 +156,13 @@ function formatDownloadLinks(
   if (!assets?.length && !tagName) return '';
 
   const i18n = CHANGELOG_I18N[lang];
-  let markdown = `    **${i18n.downloadResources}**\n\n`;
+  let markdown = `**${i18n.downloadResources}**\n\n`;
 
   // 添加资源文件
   for (const asset of assets) {
     const { name, browser_download_url, size } = asset;
     const sizeStr = formatFileSize(size);
-    markdown += `    - [${name}](${browser_download_url}) (${sizeStr})\n`;
+    markdown += `- [${name}](${browser_download_url}) (${sizeStr})\n`;
   }
 
   // 添加源代码下载链接
@@ -172,11 +172,10 @@ function formatDownloadLinks(
       ['tar.gz', 'tar.gz'],
     ]) {
       const url = `https://github.com/${SOURCE_REPO}/archive/refs/tags/${tagName}.${ext}`;
-      markdown += `    - [Source code (${extName})](${url})\n`;
+      markdown += `- [Source code (${extName})](${url})\n`;
     }
   }
 
-  markdown += '\n';
   return markdown;
 }
 
@@ -212,7 +211,7 @@ function formatReleasesMarkdown(
   };
   let markdown = `---\ntitle: ${titleMap[lang]}\n---\n\n`;
 
-  markdown += `${i18n.title}\n\n`;
+  markdown += `import { Callout } from 'fumadocs-ui/components/callout';\n\n`;
 
   // 添加警告信息
   const currentTime = new Date()
@@ -222,9 +221,9 @@ function formatReleasesMarkdown(
     })
     .replace(/\//g, '-');
 
-  markdown += `:::warning{title="${i18n.warningTitle} ${currentTime}"}\n`;
+  markdown += `<Callout type="warn" title="${i18n.warningTitle} ${currentTime}">\n`;
   markdown += `${i18n.warningDesc}\n`;
-  markdown += `:::\n\n`;
+  markdown += `</Callout>\n\n`;
 
   // 处理每个版本
   for (let index = 0; index < releases.length; index++) {
@@ -246,24 +245,18 @@ function formatReleasesMarkdown(
     markdown += `## ${name}\n\n`;
 
     const versionType = getVersionType(index, prerelease, lang);
-    const admonitionType = index === 0 ? 'info' : 'note';
+    const calloutType = index === 0 ? 'info' : 'note';
 
-    markdown += `:::${admonitionType}{title="${versionType} · ${i18n.publishedAt} ${formattedDate}"}\n\n`;
-
-    // 添加缩进内容
-    const indentedBody = processedBody
-      .split('\n')
-      .map((line) => '    ' + line)
-      .join('\n');
-    markdown += `${indentedBody}\n\n`;
+    markdown += `<Callout type="${calloutType}" title="${versionType} · ${i18n.publishedAt} ${formattedDate}">\n\n`;
+    markdown += `${processedBody}\n\n`;
 
     // 添加下载链接
     const downloadLinks = formatDownloadLinks(tag_name, assets, lang);
     if (downloadLinks) {
-      markdown += downloadLinks;
+      markdown += `${downloadLinks}`;
     }
 
-    markdown += ':::\n\n';
+    markdown += `</Callout>\n\n`;
     markdown += '---\n\n';
   }
 

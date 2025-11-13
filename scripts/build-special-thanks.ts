@@ -32,200 +32,9 @@ interface SponsorsData {
   bronze: Sponsor[];
 }
 
-// CSS 样式常量
-const CONTRIBUTOR_CSS = `
-<style>
-.contributor-simple {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
+// 不使用 CSS 样式，改用内联样式
 
-.avatar-container {
-    position: relative;
-    margin-right: 15px;
-}
-
-.contributor-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-}
-
-.medal-rank {
-    position: absolute;
-    bottom: -5px;
-    right: -5px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 12px;
-    color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.rank-1 { background-color: #ffd700; }
-.rank-2 { background-color: #c0c0c0; }
-.rank-3 { background-color: #cd7f32; }
-
-.gold-medal .contributor-avatar {
-    border: 4px solid #ffd700;
-    box-shadow: 0 0 10px #ffd700;
-}
-
-.silver-medal .contributor-avatar {
-    border: 4px solid #c0c0c0;
-    box-shadow: 0 0 10px #c0c0c0;
-}
-
-.bronze-medal .contributor-avatar {
-    border: 4px solid #cd7f32;
-    box-shadow: 0 0 10px #cd7f32;
-}
-
-.contributor-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.contributor-details a {
-    font-weight: 500;
-    text-decoration: none;
-}
-
-.contributor-stats {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-[data-md-color-scheme="slate"] .contributor-stats {
-    color: #aaa;
-}
-</style>
-`;
-
-const SPONSOR_CSS = `
-<style>
-.sponsor-card {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 15px;
-    border-radius: 10px;
-    background-color: rgba(0,0,0,0.03);
-}
-
-[data-md-color-scheme="slate"] .sponsor-card {
-    background-color: rgba(255,255,255,0.05);
-}
-
-.sponsor-avatar-container {
-    position: relative;
-    margin-right: 20px;
-}
-
-.sponsor-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.sponsor-medal {
-    position: absolute;
-    bottom: -5px;
-    right: -5px;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
-}
-
-.gold-badge { background-color: #ffd700; color: #333; }
-.silver-badge { background-color: #c0c0c0; color: #333; }
-.bronze-badge { background-color: #cd7f32; color: white; }
-
-.gold-sponsor .sponsor-avatar {
-    border: 4px solid #ffd700;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.silver-sponsor .sponsor-avatar {
-    border: 4px solid #c0c0c0;
-    box-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
-}
-
-.sponsor-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.sponsor-name {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.sponsor-amount {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-[data-md-color-scheme="slate"] .sponsor-amount {
-    color: #aaa;
-}
-
-.bronze-sponsors-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-}
-
-.bronze-sponsor-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-    background-color: rgba(0,0,0,0.02);
-}
-
-[data-md-color-scheme="slate"] .bronze-sponsor-item {
-    background-color: rgba(255,255,255,0.03);
-}
-
-.sponsor-avatar-small {
-    width: 50px !important;
-    height: 50px !important;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #cd7f32;
-    margin-bottom: 8px;
-}
-
-.bronze-sponsor-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 4px;
-    word-break: break-word;
-}
-
-.bronze-sponsor-amount {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-[data-md-color-scheme="slate"] .bronze-sponsor-amount {
-    color: #aaa;
-}
-</style>
-`;
+// 不使用 CSS 样式，改用内联样式
 
 // i18n 配置
 const SPECIAL_THANKS_I18N = {
@@ -365,15 +174,6 @@ async function fetchAfdianSponsors(): Promise<SponsorsData | null> {
   };
 }
 
-function getMedalInfo(index: number): [string, string] {
-  const medals: Record<number, [string, string]> = {
-    0: ['gold-medal', '<span class="medal-rank rank-1">1</span>'],
-    1: ['silver-medal', '<span class="medal-rank rank-2">2</span>'],
-    2: ['bronze-medal', '<span class="medal-rank rank-3">3</span>'],
-  };
-  return medals[index] || ['', ''];
-}
-
 function formatContributorsMarkdown(
   contributors: Contributor[],
   lang: keyof typeof SPECIAL_THANKS_I18N
@@ -388,25 +188,34 @@ function formatContributorsMarkdown(
   for (let index = 0; index < contributors.length; index++) {
     const { login, avatar_url, html_url, contributions } = contributors[index];
     const username = login || i18n.unknownUser;
-    const [medalClass, medalLabel] = getMedalInfo(index);
 
-    markdown += `### ${username}\n\n`;
-    markdown += `<div class="contributor-simple ${medalClass}">\n`;
-    markdown += `  <div class="avatar-container">\n`;
-    markdown += `    <img src="${avatar_url}" alt="${username}" class="contributor-avatar" />\n`;
-    if (medalLabel) {
-      markdown += `    ${medalLabel}\n`;
+    // 根据排名确定边框样式类
+    let borderClass = '';
+    let medalEmoji = '';
+    if (index === 0) {
+      borderClass = 'border-4 border-yellow-400 shadow-lg shadow-yellow-400/50';
+      medalEmoji = '🥇';
+    } else if (index === 1) {
+      borderClass = 'border-4 border-gray-400 shadow-lg shadow-gray-400/50';
+      medalEmoji = '🥈';
+    } else if (index === 2) {
+      borderClass = 'border-4 border-orange-600 shadow-lg shadow-orange-600/50';
+      medalEmoji = '🥉';
     }
+
+    markdown += `### ${medalEmoji} ${username}\n\n`;
+    markdown += `<div className="flex items-center mb-5">\n`;
+    markdown += `  <div className="mr-4">\n`;
+    markdown += `    <img src="${avatar_url}" alt="${username}" className="w-16 h-16 rounded-full ${borderClass}" />\n`;
     markdown += `  </div>\n`;
-    markdown += `  <div class="contributor-details">\n`;
-    markdown += `    <a href="${html_url}" target="_blank">${username}</a>\n`;
-    markdown += `    <span class="contributor-stats">${i18n.contributions}: ${contributions}</span>\n`;
+    markdown += `  <div className="flex flex-col">\n`;
+    markdown += `    <a href="${html_url}" target="_blank" rel="noopener noreferrer" className="font-medium no-underline mb-1">${username}</a>\n`;
+    markdown += `    <span className="text-sm text-muted-foreground">${i18n.contributions}: ${contributions}</span>\n`;
     markdown += `  </div>\n`;
     markdown += `</div>\n\n`;
     markdown += '---\n\n';
   }
 
-  markdown += CONTRIBUTOR_CSS;
   return markdown;
 }
 
@@ -431,28 +240,28 @@ function formatSponsorsMarkdown(
     emoji: string;
     title: string;
     desc: string;
-    useGrid: boolean;
+    borderClass: string;
   }> = [
     {
       key: 'gold',
       emoji: '🥇',
       title: i18n.goldSponsor,
       desc: i18n.goldSponsorDesc,
-      useGrid: false,
+      borderClass: 'border-4 border-yellow-400 shadow-lg shadow-yellow-400/50',
     },
     {
       key: 'silver',
       emoji: '🥈',
       title: i18n.silverSponsor,
       desc: i18n.silverSponsorDesc,
-      useGrid: false,
+      borderClass: 'border-4 border-gray-400 shadow-lg shadow-gray-400/50',
     },
     {
       key: 'bronze',
       emoji: '🥉',
       title: i18n.bronzeSponsor,
       desc: i18n.bronzeSponsorDesc,
-      useGrid: true,
+      borderClass: 'border-4 border-orange-600 shadow-lg shadow-orange-600/50',
     },
   ];
 
@@ -463,39 +272,22 @@ function formatSponsorsMarkdown(
     markdown += `### ${level.emoji} ${level.title}\n\n`;
     markdown += `${level.desc}\n\n`;
 
-    if (level.useGrid) {
-      // 铜牌赞助商使用网格布局
-      markdown += '<div class="bronze-sponsors-grid">\n';
-      for (const sponsor of sponsorList) {
-        const { name, avatar, amount } = sponsor;
-        markdown += `  <div class="bronze-sponsor-item">\n`;
-        markdown += `    <img src="${avatar}" alt="${name}" class="sponsor-avatar-small" />\n`;
-        markdown += `    <span class="bronze-sponsor-name">${name}</span>\n`;
-        markdown += `    <span class="bronze-sponsor-amount">¥${amount.toFixed(2)}</span>\n`;
-        markdown += `  </div>\n`;
-      }
-      markdown += '</div>\n\n';
-    } else {
-      // 金牌和银牌赞助商使用卡片布局
-      for (const sponsor of sponsorList) {
-        const { name, avatar, amount } = sponsor;
-        markdown += `<div class="sponsor-card ${level.key}-sponsor">\n`;
-        markdown += `  <div class="sponsor-avatar-container">\n`;
-        markdown += `    <img src="${avatar}" alt="${name}" class="sponsor-avatar" />\n`;
-        markdown += `    <span class="sponsor-medal ${level.key}-badge">${level.key.charAt(0).toUpperCase() + level.key.slice(1)}</span>\n`;
-        markdown += `  </div>\n`;
-        markdown += `  <div class="sponsor-details">\n`;
-        markdown += `    <span class="sponsor-name">${name}</span>\n`;
-        markdown += `    <span class="sponsor-amount">${i18n.totalSponsored}: ¥${amount.toFixed(2)}</span>\n`;
-        markdown += `  </div>\n`;
-        markdown += `</div>\n\n`;
-      }
+    for (const sponsor of sponsorList) {
+      const { name, avatar, amount } = sponsor;
+      markdown += `<div className="flex items-center mb-5 p-4 rounded-lg bg-fd-muted/30">\n`;
+      markdown += `  <div className="mr-5">\n`;
+      markdown += `    <img src="${avatar}" alt="${name}" className="w-20 h-20 rounded-full ${level.borderClass}" />\n`;
+      markdown += `  </div>\n`;
+      markdown += `  <div className="flex flex-col">\n`;
+      markdown += `    <span className="text-lg font-semibold mb-1">${name}</span>\n`;
+      markdown += `    <span className="text-sm text-muted-foreground">${i18n.totalSponsored}: ¥${amount.toFixed(2)}</span>\n`;
+      markdown += `  </div>\n`;
+      markdown += `</div>\n\n`;
     }
 
     markdown += '---\n\n';
   }
 
-  markdown += SPONSOR_CSS;
   return markdown;
 }
 
@@ -522,7 +314,8 @@ function generateSpecialThanksContent(
   };
   parts.push(`---\ntitle: ${titleMap[lang]}\n---\n\n`);
 
-  parts.push(`${i18n.title}\n\n${i18n.intro}\n\n`);
+  parts.push(`import { Callout } from 'fumadocs-ui/components/callout';\n\n`);
+  parts.push(`${i18n.intro}\n\n`);
 
   // 赞助商部分
   if (
@@ -532,10 +325,10 @@ function generateSpecialThanksContent(
     parts.push(`${i18n.sponsorsTitle}\n\n`);
     parts.push(`${i18n.sponsorsIntro}\n\n`);
     parts.push(
-      `:::info{title="${i18n.sponsorsInfoTitle} ${currentTime} (UTC+8)"}\n`
+      `<Callout title="${i18n.sponsorsInfoTitle} ${currentTime} (UTC+8)">\n`
     );
     parts.push(`${i18n.sponsorsInfoDesc}\n`);
-    parts.push(`:::\n\n`);
+    parts.push(`</Callout>\n\n`);
     parts.push(formatSponsorsMarkdown(sponsors, lang));
   }
 
@@ -544,10 +337,10 @@ function generateSpecialThanksContent(
     parts.push(`${i18n.contributorsTitle}\n\n`);
     parts.push(`${i18n.contributorsIntro}\n\n`);
     parts.push(
-      `:::info{title="${i18n.contributorsInfoTitle} ${currentTime} (UTC+8)"}\n`
+      `<Callout title="${i18n.contributorsInfoTitle} ${currentTime} (UTC+8)">\n`
     );
     parts.push(`${i18n.contributorsInfoDesc}\n`);
-    parts.push(`:::\n\n`);
+    parts.push(`</Callout>\n\n`);
     parts.push(formatContributorsMarkdown(contributors, lang));
   }
 
