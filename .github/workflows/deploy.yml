@@ -36,6 +36,17 @@ jobs:
       - name: 📦 Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: 🔄 Pre-build (Generate Changelog & Special Thanks)
+        run: bun run prebuild
+        env:
+          # GitHub API Token (自动提供)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 源仓库配置
+          SOURCE_REPO: QuantumNous/new-api
+          # 爱发电 API (可选，如需配置请在 Repository Secrets 中添加)
+          AFDIAN_USER_ID: ${{ secrets.AFDIAN_USER_ID }}
+          AFDIAN_TOKEN: ${{ secrets.AFDIAN_TOKEN }}
+
       - name: 🔨 Build with Next.js
         run: bun run build
         env:

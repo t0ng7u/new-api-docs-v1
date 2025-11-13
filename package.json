@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "prebuild": "tsx scripts/prebuild.ts",
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
@@ -38,6 +39,7 @@
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.1.16",
+    "tsx": "^4.19.2",
     "typescript": "^5.9.3"
   }
 }
