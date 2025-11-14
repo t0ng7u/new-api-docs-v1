@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import { GrainGradient, Dithering } from '@paper-design/shaders-react';
 import { useTheme } from 'next-themes';
+import Image from 'next/image';
+import { cn } from '@/lib/cn';
 
 export function Hero() {
   const { resolvedTheme } = useTheme();
   const [showShaders, setShowShaders] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
 
   useEffect(() => {
     // Apply some delay, otherwise on slower devices, it errors with uniform images not being fully loaded.
@@ -77,6 +80,23 @@ export function Hero() {
           className="animate-fd-fade-in absolute duration-1000 max-lg:bottom-[-40%] max-lg:left-[-120px] lg:top-[5%] lg:right-[10%]"
         />
       )}
+      <Image
+        src={
+          resolvedTheme === 'dark'
+            ? '/assets/dashboard-dark.png'
+            : '/assets/dashboard-light.png'
+        }
+        alt="dashboard-preview"
+        width={1200}
+        height={800}
+        className={cn(
+          'absolute top-[460px] left-[20%] max-w-[1200px] rounded-xl border-2',
+          'lg:top-[400px]',
+          imageReady ? 'animate-in fade-in duration-400' : 'invisible'
+        )}
+        onLoad={() => setImageReady(true)}
+        priority
+      />
     </>
   );
 }
