@@ -204,13 +204,11 @@ function detectManualTranslations(): Set<string> {
       encoding: 'utf-8',
     });
 
-    const changedFiles = output.trim().split('\n');
+    const changedFiles = output.trim().split('\n').filter(Boolean);
+    const languageDirs = Object.values(LANGUAGES).map((l) => `/${l.dir}/`);
 
     for (const filePath of changedFiles) {
-      if (
-        filePath &&
-        (filePath.includes('/en/') || filePath.includes('/ja/'))
-      ) {
+      if (languageDirs.some((dir) => filePath.includes(dir))) {
         manualTranslations.add(path.join(process.cwd(), filePath));
       }
     }
@@ -363,12 +361,36 @@ async function translateFile(
   if (INCREMENTAL_TRANSLATE && !FORCE_TRANSLATE) {
     const fileChange = getFileChanges(sourceFile);
     hasChanges = fileChange.hasChanges;
+  }
 
-    if (!hasChanges) {
-      console.log(`${prefix} ⏭  No changes detected, skipping...`);
-      result.skipped = Object.keys(LANGUAGES).length;
-      return result;
+  // Check if any target translation is missing
+  const missingTranslations: string[] = [];
+  for (const [langCode, langInfo] of Object.entries(LANGUAGES)) {
+    const targetFile = path.join(DOCS_DIR, langInfo.dir, relPath);
+    if (!fs.existsSync(targetFile)) {
+      missingTranslations.push(langInfo.nativeName);
     }
+  }
+
+  // Skip only if no changes AND all translations exist
+  if (
+    INCREMENTAL_TRANSLATE &&
+    !hasChanges &&
+    missingTranslations.length === 0 &&
+    !FORCE_TRANSLATE
+  ) {
+    console.log(
+      `${prefix} ⏭  No changes and all translations exist, skipping...`
+    );
+    result.skipped = Object.keys(LANGUAGES).length;
+    return result;
+  }
+
+  // Log if we're filling missing translations
+  if (missingTranslations.length > 0 && !hasChanges) {
+    console.log(
+      `${prefix} 📝 Filling missing translations: ${missingTranslations.join(', ')}`
+    );
   }
 
   // Translate to each target language
@@ -514,7 +536,9 @@ async function translateDocs(specificFiles?: string[]) {
     filesToTranslate = specificFiles
       .map((file) => path.resolve(file))
       .filter((file) => {
-        if (file.includes('/en/') || file.includes('/ja/')) {
+        const languageDirs = Object.values(LANGUAGES).map((l) => `/${l.dir}/`);
+
+        if (languageDirs.some((dir) => file.includes(dir))) {
           console.log(`⏭  Skipping translated file: ${file}`);
           return false;
         }
