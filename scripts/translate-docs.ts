@@ -7,7 +7,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 
+// ============================================================================
 // Configuration
+// ============================================================================
+
 const DOCS_DIR = path.join(process.cwd(), 'content', 'docs');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const OPENAI_BASE_URL =
@@ -18,32 +21,14 @@ const RETRY_DELAY = parseInt(process.env.RETRY_DELAY || '2', 10);
 const RETRY_BACKOFF = parseFloat(process.env.RETRY_BACKOFF || '2.0');
 const MAX_WORKERS = parseInt(process.env.MAX_WORKERS || '3', 10);
 const FORCE_TRANSLATE = process.env.FORCE_TRANSLATE?.toLowerCase() === 'true';
+const INCREMENTAL_TRANSLATE =
+  process.env.INCREMENTAL_TRANSLATE?.toLowerCase() !== 'false';
 
-// Language configuration
 const LANGUAGES = {
-  en: {
-    name: 'English',
-    nativeName: '英文',
-    dir: 'en',
-  },
-  ja: {
-    name: 'Japanese',
-    nativeName: '日文',
-    dir: 'ja',
-  },
+  en: { name: 'English', nativeName: '英文', dir: 'en' },
+  ja: { name: 'Japanese', nativeName: '日文', dir: 'ja' },
 } as const;
 
-type LanguageCode = keyof typeof LANGUAGES;
-
-interface OpenAIResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-  }>;
-}
-
-// Translation terminology glossary
 const GLOSSARY = `
 | 中文 | English | 说明 | Description |
 |------|---------|------|-------------|
@@ -54,10 +39,14 @@ const GLOSSARY = `
 | 额度 | Quota | 用户可用的服务额度 | Available service quota for users |
 `;
 
-// Check API key
-if (!OPENAI_API_KEY) {
-  console.error('❌ Error: OPENAI_API_KEY environment variable is not set');
-  process.exit(1);
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
+type LanguageCode = keyof typeof LANGUAGES;
+
+interface OpenAIResponse {
+  choices: Array<{ message: { content: string } }>;
 }
 
 interface TranslationStats {
@@ -67,17 +56,32 @@ interface TranslationStats {
   failed: number;
 }
 
-/**
- * Get translation prompt
- */
-function getTranslationPrompt(
-  targetLang: LanguageCode,
-  content: string
-): string {
-  const langInfo = LANGUAGES[targetLang];
+interface FileChange {
+  oldContent: string;
+  newContent: string;
+  hasChanges: boolean;
+}
 
-  return `你是一个专业的技术文档翻译专家。请将以下 Markdown 格式的技术文档从中文翻译为${langInfo.nativeName}。
+interface TranslationResult {
+  translated: number;
+  skipped: number;
+  failed: number;
+}
 
+// ============================================================================
+// Validation
+// ============================================================================
+
+if (!OPENAI_API_KEY) {
+  console.error('❌ Error: OPENAI_API_KEY environment variable is not set');
+  process.exit(1);
+}
+
+// ============================================================================
+// Translation Prompt Generation
+// ============================================================================
+
+const BASE_TRANSLATION_RULES = `
 翻译要求：
 1. 保持 Markdown 格式完整，包括标题、列表、代码块、链接等
 2. 代码块内容不要翻译
@@ -86,8 +90,17 @@ function getTranslationPrompt(
 5. 图片路径、链接路径保持不变（如果路径中包含中文目录，保持原样）
 6. Front matter (YAML 头部) 中的内容需要翻译
 7. 保持原文的语气和风格
-8. 对于特殊的专有名词（如产品名 "New API"、"Cherry Studio" 等），保持不变
-9. 路径中的语言代码需要替换：将 /zh/ 替换为 /${langInfo.dir}/（例如：href="/zh/docs/guide" → href="/${langInfo.dir}/docs/guide"）
+8. 对于特殊的专有名词（如产品名 "New API"、"Cherry Studio" 等），保持不变`;
+
+function getTranslationPrompt(
+  targetLang: LanguageCode,
+  content: string
+): string {
+  const { nativeName, dir } = LANGUAGES[targetLang];
+
+  return `你是一个专业的技术文档翻译专家。请将以下 Markdown 格式的技术文档从中文翻译为${nativeName}。
+${BASE_TRANSLATION_RULES}
+9. 路径中的语言代码需要替换：将 /zh/ 替换为 /${dir}/（例如：href="/zh/docs/guide" → href="/${dir}/docs/guide"）
 
 术语表（不要放在翻译内容中）：
 ${GLOSSARY}
@@ -100,14 +113,49 @@ ${content}
 `;
 }
 
-/**
- * Call OpenAI API to translate content
- */
+// ============================================================================
+// OpenAI API Integration
+// ============================================================================
+
+async function callOpenAI(
+  prompt: string,
+  targetLang: LanguageCode
+): Promise<string> {
+  const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a professional technical documentation translator. Translate accurately while preserving Markdown formatting, code blocks, and technical terms.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.3,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `API request failed: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = (await response.json()) as OpenAIResponse;
+  return data.choices[0].message.content.trim();
+}
+
 async function translateContent(
   content: string,
   targetLang: LanguageCode
 ): Promise<string> {
-  const langInfo = LANGUAGES[targetLang];
+  const { nativeName } = LANGUAGES[targetLang];
   let retryCount = 0;
   let lastError: Error | null = null;
 
@@ -115,42 +163,12 @@ async function translateContent(
     try {
       if (retryCount > 0) {
         console.log(
-          `   ⟳ Retry ${retryCount}/${MAX_RETRIES} for ${langInfo.nativeName}...`
+          `   ⟳ Retry ${retryCount}/${MAX_RETRIES} for ${nativeName}...`
         );
       }
 
-      const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: OPENAI_MODEL,
-          messages: [
-            {
-              role: 'system',
-              content: `You are a professional technical documentation translator. Translate accurately while preserving Markdown formatting, code blocks, and technical terms.`,
-            },
-            {
-              role: 'user',
-              content: getTranslationPrompt(targetLang, content),
-            },
-          ],
-          temperature: 0.3,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `API request failed: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = (await response.json()) as OpenAIResponse;
-      const translatedContent = data.choices[0].message.content.trim();
-
-      return translatedContent;
+      const prompt = getTranslationPrompt(targetLang, content);
+      return await callOpenAI(prompt, targetLang);
     } catch (error) {
       lastError = error as Error;
       retryCount++;
@@ -173,9 +191,10 @@ async function translateContent(
   throw lastError!;
 }
 
-/**
- * Detect manually translated files from git
- */
+// ============================================================================
+// Git Integration
+// ============================================================================
+
 function detectManualTranslations(): Set<string> {
   const manualTranslations = new Set<string>();
 
@@ -192,8 +211,7 @@ function detectManualTranslations(): Set<string> {
         filePath &&
         (filePath.includes('/en/') || filePath.includes('/ja/'))
       ) {
-        const fullPath = path.join(process.cwd(), filePath);
-        manualTranslations.add(fullPath);
+        manualTranslations.add(path.join(process.cwd(), filePath));
       }
     }
 
@@ -203,111 +221,48 @@ function detectManualTranslations(): Set<string> {
       );
     }
   } catch (error) {
-    // Git command failed (maybe not in a git repo), continue without manual detection
     console.log('ℹ Could not detect manual translations (not in git repo?)');
   }
 
   return manualTranslations;
 }
 
-/**
- * Translate a single file
- */
-async function translateFile(
-  sourceFile: string,
-  fileIndex: number,
-  totalFiles: number,
-  manualTranslations: Set<string>
-): Promise<{ translated: number; skipped: number; failed: number }> {
-  const prefix = `[${fileIndex}/${totalFiles}]`;
-  console.log(
-    `\n${prefix} 📄 Processing: ${path.relative(process.cwd(), sourceFile)}`
-  );
-
-  let result = { translated: 0, skipped: 0, failed: 0 };
-
-  // Read source file
-  let content: string;
+function getFileChanges(filePath: string): FileChange {
   try {
-    content = fs.readFileSync(sourceFile, 'utf-8');
+    const relativePath = path.relative(process.cwd(), filePath);
+    const oldContent = execSync(`git show HEAD:${relativePath}`, {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    });
+
+    const newContent = fs.readFileSync(filePath, 'utf-8');
+
+    return {
+      oldContent,
+      newContent,
+      hasChanges: oldContent !== newContent,
+    };
   } catch (error) {
-    console.error(
-      `${prefix} ✗ Failed to read file: ${(error as Error).message}`
-    );
-    result.failed = Object.keys(LANGUAGES).length;
-    return result;
+    // File is new or not in git
+    return {
+      oldContent: '',
+      newContent: fs.readFileSync(filePath, 'utf-8'),
+      hasChanges: true,
+    };
   }
-
-  // Calculate relative path from zh directory
-  const zhDir = path.join(DOCS_DIR, 'zh');
-  let relPath: string;
-
-  try {
-    relPath = path.relative(zhDir, sourceFile);
-  } catch (error) {
-    console.error(`${prefix} ✗ File is not in zh directory`);
-    result.failed = Object.keys(LANGUAGES).length;
-    return result;
-  }
-
-  // Translate to each target language
-  for (const [langCode, langInfo] of Object.entries(LANGUAGES)) {
-    const targetFile = path.join(DOCS_DIR, langInfo.dir, relPath);
-
-    // Check if manually translated
-    if (manualTranslations.has(targetFile)) {
-      console.log(
-        `${prefix} ⏭  Skipping ${langInfo.nativeName} (manual translation detected)`
-      );
-      result.skipped++;
-      continue;
-    }
-
-    // Check if translation already exists
-    if (fs.existsSync(targetFile) && !FORCE_TRANSLATE) {
-      console.log(
-        `${prefix} ⏭  Skipping ${langInfo.nativeName} (already exists)`
-      );
-      result.skipped++;
-      continue;
-    } else if (fs.existsSync(targetFile) && FORCE_TRANSLATE) {
-      console.log(
-        `${prefix} 🔄 Force re-translating ${langInfo.nativeName} (file exists)`
-      );
-    }
-
-    // Translate content
-    try {
-      console.log(`${prefix} 🌐 Translating to ${langInfo.nativeName}...`);
-      const translatedContent = await translateContent(
-        content,
-        langCode as LanguageCode
-      );
-
-      // Ensure target directory exists
-      const targetDir = path.dirname(targetFile);
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-      }
-
-      // Write translated file
-      fs.writeFileSync(targetFile, translatedContent, 'utf-8');
-      console.log(`${prefix} ✓ Saved ${langInfo.nativeName} translation`);
-      result.translated++;
-    } catch (error) {
-      console.error(
-        `${prefix} ✗ Failed to translate ${langInfo.nativeName}: ${(error as Error).message}`
-      );
-      result.failed++;
-    }
-  }
-
-  return result;
 }
 
-/**
- * Collect all markdown files from zh directory
- */
+// ============================================================================
+// File System Operations
+// ============================================================================
+
+function ensureDirectoryExists(filePath: string): void {
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
 function collectMarkdownFiles(dir: string): string[] {
   const files: string[] = [];
 
@@ -329,9 +284,157 @@ function collectMarkdownFiles(dir: string): string[] {
   return files;
 }
 
-/**
- * Process files with concurrency control
- */
+// ============================================================================
+// Translation Logic
+// ============================================================================
+
+async function translateToLanguage(
+  content: string,
+  langCode: string,
+  langInfo: (typeof LANGUAGES)[LanguageCode],
+  targetFile: string,
+  prefix: string,
+  isIncremental: boolean
+): Promise<boolean> {
+  const translationType = isIncremental ? 'Incremental' : 'Full';
+  const emoji = isIncremental ? '🔄' : '🌐';
+
+  console.log(
+    `${prefix} ${emoji} ${translationType} translation to ${langInfo.nativeName}...`
+  );
+
+  try {
+    const translatedContent = await translateContent(
+      content,
+      langCode as LanguageCode
+    );
+
+    ensureDirectoryExists(targetFile);
+    fs.writeFileSync(targetFile, translatedContent, 'utf-8');
+
+    const status = isIncremental ? 'Updated' : 'Saved';
+    console.log(`${prefix} ✓ ${status} ${langInfo.nativeName} translation`);
+    return true;
+  } catch (error) {
+    console.error(
+      `${prefix} ✗ Failed to translate ${langInfo.nativeName}: ${(error as Error).message}`
+    );
+    return false;
+  }
+}
+
+async function translateFile(
+  sourceFile: string,
+  fileIndex: number,
+  totalFiles: number,
+  manualTranslations: Set<string>
+): Promise<TranslationResult> {
+  const prefix = `[${fileIndex}/${totalFiles}]`;
+  const result: TranslationResult = { translated: 0, skipped: 0, failed: 0 };
+
+  console.log(
+    `\n${prefix} 📄 Processing: ${path.relative(process.cwd(), sourceFile)}`
+  );
+
+  // Read source file
+  let content: string;
+  try {
+    content = fs.readFileSync(sourceFile, 'utf-8');
+  } catch (error) {
+    console.error(
+      `${prefix} ✗ Failed to read file: ${(error as Error).message}`
+    );
+    result.failed = Object.keys(LANGUAGES).length;
+    return result;
+  }
+
+  // Calculate relative path
+  const zhDir = path.join(DOCS_DIR, 'zh');
+  const relPath = path.relative(zhDir, sourceFile);
+
+  if (relPath.startsWith('..')) {
+    console.error(`${prefix} ✗ File is not in zh directory`);
+    result.failed = Object.keys(LANGUAGES).length;
+    return result;
+  }
+
+  // Check for file changes (incremental translation)
+  let hasChanges = true;
+  if (INCREMENTAL_TRANSLATE && !FORCE_TRANSLATE) {
+    const fileChange = getFileChanges(sourceFile);
+    hasChanges = fileChange.hasChanges;
+
+    if (!hasChanges) {
+      console.log(`${prefix} ⏭  No changes detected, skipping...`);
+      result.skipped = Object.keys(LANGUAGES).length;
+      return result;
+    }
+  }
+
+  // Translate to each target language
+  for (const [langCode, langInfo] of Object.entries(LANGUAGES)) {
+    const targetFile = path.join(DOCS_DIR, langInfo.dir, relPath);
+
+    // Check manual translation
+    if (manualTranslations.has(targetFile)) {
+      console.log(
+        `${prefix} ⏭  Skipping ${langInfo.nativeName} (manual translation detected)`
+      );
+      result.skipped++;
+      continue;
+    }
+
+    const targetExists = fs.existsSync(targetFile);
+
+    // Skip if exists and not forcing
+    if (targetExists && !FORCE_TRANSLATE && !INCREMENTAL_TRANSLATE) {
+      console.log(
+        `${prefix} ⏭  Skipping ${langInfo.nativeName} (already exists)`
+      );
+      result.skipped++;
+      continue;
+    }
+
+    // Determine translation type
+    const isIncremental = INCREMENTAL_TRANSLATE && targetExists && hasChanges;
+    const shouldTranslate =
+      FORCE_TRANSLATE || !targetExists || (INCREMENTAL_TRANSLATE && hasChanges);
+
+    if (!shouldTranslate) {
+      result.skipped++;
+      continue;
+    }
+
+    if (FORCE_TRANSLATE && targetExists && !isIncremental) {
+      console.log(
+        `${prefix} 🔄 Force re-translating ${langInfo.nativeName}...`
+      );
+    }
+
+    // Perform translation
+    const success = await translateToLanguage(
+      content,
+      langCode,
+      langInfo,
+      targetFile,
+      prefix,
+      isIncremental
+    );
+
+    if (success) {
+      result.translated++;
+    } else {
+      result.failed++;
+    }
+  }
+
+  return result;
+}
+
+// ============================================================================
+// Concurrent Processing
+// ============================================================================
+
 async function processFiles(
   files: string[],
   manualTranslations: Set<string>
@@ -344,7 +447,6 @@ async function processFiles(
   };
 
   if (MAX_WORKERS === 1) {
-    // Sequential mode
     console.log('\n🔄 Using sequential mode\n');
 
     for (let i = 0; i < files.length; i++) {
@@ -359,7 +461,6 @@ async function processFiles(
       stats.failed += result.failed;
     }
   } else {
-    // Concurrent mode
     console.log(`\n🚀 Using concurrent mode (${MAX_WORKERS} workers)\n`);
 
     const chunks: string[][] = [];
@@ -394,27 +495,25 @@ async function processFiles(
   return stats;
 }
 
-/**
- * Main function
- */
+// ============================================================================
+// Main Function
+// ============================================================================
+
 async function translateDocs(specificFiles?: string[]) {
   console.log('═══════════════════════════════════════════════');
   console.log('🌐 Starting document translation...');
   console.log('═══════════════════════════════════════════════\n');
 
   const startTime = Date.now();
-
-  // Detect manual translations
   const manualTranslations = detectManualTranslations();
 
+  // Determine files to translate
   let filesToTranslate: string[];
 
   if (specificFiles && specificFiles.length > 0) {
-    // Translate specific files
     filesToTranslate = specificFiles
       .map((file) => path.resolve(file))
       .filter((file) => {
-        // Skip translated files
         if (file.includes('/en/') || file.includes('/ja/')) {
           console.log(`⏭  Skipping translated file: ${file}`);
           return false;
@@ -433,7 +532,6 @@ async function translateDocs(specificFiles?: string[]) {
         return true;
       });
   } else {
-    // Translate all files in zh directory
     const zhDir = path.join(DOCS_DIR, 'zh');
     filesToTranslate = collectMarkdownFiles(zhDir);
   }
@@ -443,6 +541,7 @@ async function translateDocs(specificFiles?: string[]) {
     return;
   }
 
+  // Display configuration
   console.log(`\n📋 Configuration:`);
   console.log(`   Files: ${filesToTranslate.length}`);
   console.log(`   Model: ${OPENAI_MODEL}`);
@@ -456,6 +555,9 @@ async function translateDocs(specificFiles?: string[]) {
     `   Retry: Max ${MAX_RETRIES} times, delay ${RETRY_DELAY}s, backoff ${RETRY_BACKOFF}x`
   );
   console.log(`   Concurrency: ${MAX_WORKERS} worker(s)`);
+  console.log(
+    `   Incremental translate: ${INCREMENTAL_TRANSLATE ? 'Yes' : 'No'}`
+  );
   console.log(`   Force translate: ${FORCE_TRANSLATE ? 'Yes' : 'No'}`);
   console.log(`   Manual translations: ${manualTranslations.size}`);
 
@@ -464,6 +566,7 @@ async function translateDocs(specificFiles?: string[]) {
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
+  // Display results
   console.log('\n═══════════════════════════════════════════════');
   console.log('📊 Translation Statistics:');
   console.log(`   Total files: ${stats.total}`);
@@ -477,7 +580,10 @@ async function translateDocs(specificFiles?: string[]) {
   console.log('✅ Translation completed!\n');
 }
 
-// Execute if run directly
+// ============================================================================
+// Entry Point
+// ============================================================================
+
 if (require.main === module) {
   const args = process.argv.slice(2);
   translateDocs(args.length > 0 ? args : undefined).catch((error) => {
