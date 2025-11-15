@@ -12,7 +12,7 @@ const DOCS_DIR = path.join(process.cwd(), 'content', 'docs');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const OPENAI_BASE_URL =
   process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gemini-2.5-flash';
 const MAX_RETRIES = parseInt(process.env.MAX_RETRIES || '3', 10);
 const RETRY_DELAY = parseInt(process.env.RETRY_DELAY || '2', 10);
 const RETRY_BACKOFF = parseFloat(process.env.RETRY_BACKOFF || '2.0');
@@ -45,13 +45,13 @@ interface OpenAIResponse {
 
 // Translation terminology glossary
 const GLOSSARY = `
-| 中文 | English | Japanese | 说明 |
-|------|---------|----------|------|
-| 倍率 | Ratio | 倍率 | 用于计算价格的乘数因子 |
-| 令牌 | Token | トークン | API访问凭证，也指模型处理的文本单元 |
-| 渠道 | Channel | チャンネル | API服务提供商的接入通道 |
-| 分组 | Group | グループ | 用户或令牌的分类，影响价格倍率 |
-| 额度 | Quota | クォータ | 用户可用的服务额度 |
+| 中文 | English | 说明 | Description |
+|------|---------|------|-------------|
+| 倍率 | Ratio | 用于计算价格的乘数因子 | Multiplier factor used for price calculation |
+| 令牌 | Token | API访问凭证，也指模型处理的文本单元 | API access credentials or text units processed by models |
+| 渠道 | Channel | API服务提供商的接入通道 | Access channel for API service providers |
+| 分组 | Group | 用户或令牌的分类，影响价格倍率 | Classification of users or tokens, affecting price ratios |
+| 额度 | Quota | 用户可用的服务额度 | Available service quota for users |
 `;
 
 // Check API key
@@ -87,6 +87,7 @@ function getTranslationPrompt(
 6. Front matter (YAML 头部) 中的内容需要翻译
 7. 保持原文的语气和风格
 8. 对于特殊的专有名词（如产品名 "New API"、"Cherry Studio" 等），保持不变
+9. 路径中的语言代码需要替换：将 /zh/ 替换为 /${langInfo.dir}/（例如：href="/zh/docs/guide" → href="/${langInfo.dir}/docs/guide"）
 
 术语表（不要放在翻译内容中）：
 ${GLOSSARY}
