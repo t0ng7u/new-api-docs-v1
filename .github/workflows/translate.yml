@@ -1,0 +1,188 @@
+name: Auto Translate Documents
+
+on:
+  # 当推送到 main 分支的 content/docs/zh 目录时触发
+  push:
+    branches: ['main']
+    paths:
+      - 'content/docs/zh/**/*.md'
+      - 'content/docs/zh/**/*.mdx'
+
+  # 允许手动触发
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '翻译模式 / Translation Mode'
+        required: true
+        type: choice
+        default: 'changed'
+        options:
+          - changed # 只翻译变更的文件
+          - force_all # 强制重新翻译所有文件
+          - missing_only # 只翻译缺失的文件
+
+# 设置权限
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # 获取最近2次提交，用于检测手动翻译
+
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 Get changed files
+        id: changed-files
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+
+          # 如果是 push 触发，默认为 changed 模式
+          if [ -z "$MODE" ]; then
+            MODE="changed"
+          fi
+
+          echo "📋 翻译模式: $MODE"
+
+          if [ "$MODE" = "force_all" ]; then
+            # 强制翻译所有文档
+            echo "📚 获取所有中文文档文件..."
+            CHANGED_FILES=$(find content/docs/zh -name "*.md" -o -name "*.mdx" | tr '\n' ' ')
+            
+          elif [ "$MODE" = "missing_only" ]; then
+            # 只翻译缺失的文档
+            echo "🔍 检测缺失的翻译文件..."
+            CHANGED_FILES=""
+            
+            # 遍历所有中文文档
+            for zh_file in $(find content/docs/zh -name "*.md" -o -name "*.mdx"); do
+              # 计算相对路径
+              rel_path=${zh_file#content/docs/zh/}
+              
+              # 检查英文和日文翻译是否存在
+              en_file="content/docs/en/$rel_path"
+              ja_file="content/docs/ja/$rel_path"
+              
+              if [ ! -f "$en_file" ] || [ ! -f "$ja_file" ]; then
+                CHANGED_FILES="$CHANGED_FILES $zh_file"
+                if [ ! -f "$en_file" ]; then
+                  echo "  ❌ 缺失英文翻译: $en_file"
+                fi
+                if [ ! -f "$ja_file" ]; then
+                  echo "  ❌ 缺失日文翻译: $ja_file"
+                fi
+              fi
+            done
+            
+          else
+            # 正常模式：只翻译变更的文件
+            echo "📝 获取变更的中文文档..."
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '^content/docs/zh/.*\.(md|mdx)$' || echo "")
+          fi
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "✅ 没有需要翻译的文档文件"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "📊 待翻译文件:"
+            echo "$CHANGED_FILES" | tr ' ' '\n'
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            # 将文件列表保存为单行，用空格分隔
+            echo "files=$(echo $CHANGED_FILES | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🌐 Translate documents
+        if: steps.changed-files.outputs.has_changes == 'true'
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          IS_PUSH="${{ github.event_name == 'push' }}"
+
+          if [ "$MODE" = "force_all" ]; then
+            echo "🔄 强制重新翻译所有文件..."
+            FORCE_TRANSLATE=true bun run translate ${{ steps.changed-files.outputs.files }}
+          elif [ "$IS_PUSH" = "true" ]; then
+            echo "🌐 翻译文件（push 触发，强制模式）..."
+            FORCE_TRANSLATE=true bun run translate ${{ steps.changed-files.outputs.files }}
+          else
+            echo "🌐 翻译文件..."
+            bun run translate ${{ steps.changed-files.outputs.files }}
+          fi
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL || 'gpt-4o-mini' }}
+          MAX_RETRIES: ${{ secrets.MAX_RETRIES || '3' }}
+          RETRY_DELAY: ${{ secrets.RETRY_DELAY || '2' }}
+          RETRY_BACKOFF: ${{ secrets.RETRY_BACKOFF || '2.0' }}
+          MAX_WORKERS: ${{ secrets.MAX_WORKERS || '3' }}
+
+      - name: 📝 Create Pull Request
+        if: steps.changed-files.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            🌐 docs: auto-translate documents
+
+            Automatically translated the following files:
+            ${{ steps.changed-files.outputs.files }}
+
+            Generated by GitHub Actions workflow
+          branch: auto-translate-${{ github.run_id }}
+          delete-branch: true
+          title: '🌐 Auto-translate documentation'
+          body: |
+            ## 📝 自动翻译
+
+            此 PR 由 GitHub Actions 自动生成，包含文档的自动翻译。
+
+            ### 📊 翻译信息
+            - **触发方式**: ${{ github.event_name }}
+            - **翻译模式**: ${{ github.event.inputs.mode || 'changed' }}
+            - **工作流运行**: #${{ github.run_id }}
+
+            ### 📁 翻译文件
+            ```
+            ${{ steps.changed-files.outputs.files }}
+            ```
+
+            ### ✅ 检查项
+            - [ ] 翻译内容准确
+            - [ ] 格式保持完整
+            - [ ] 链接正常工作
+
+            ---
+            *Generated by [Auto Translate Workflow](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})*
+          labels: |
+            documentation
+            auto-translation
+          assignees: ${{ github.actor }}
+
+      - name: 📊 Summary
+        if: always()
+        run: |
+          if [ "${{ steps.changed-files.outputs.has_changes }}" = "true" ]; then
+            echo "### 🌐 Translation Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Changed files:**" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Translation completed successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ℹ️ No Translation Needed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "No Chinese documents were changed in this commit." >> $GITHUB_STEP_SUMMARY
+          fi

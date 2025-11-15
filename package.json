@@ -9,7 +9,10 @@
     "start": "next start",
     "postinstall": "fumadocs-mdx",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "translate": "bun scripts/translate-docs.ts",
+    "translate:all": "bun scripts/translate-docs.ts",
+    "translate:force": "bun run translate"
   },
   "dependencies": {
     "@orama/orama": "^3.1.16",
