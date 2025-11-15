@@ -1,0 +1,124 @@
+---
+title: クイックスタート
+description: あなたのニーズに最適なデプロイ方法を選択してください
+---
+
+import {
+  BookOpen,
+  Server,
+  Network,
+  Code2,
+  Users,
+  Headphones,
+  List,
+  Bot,
+  Handshake,
+} from 'lucide-react';
+
+## デプロイ方法の選択
+
+あなたの環境と技術要件に基づいて適切なデプロイ方法を選択してください。
+
+<Cards>
+  <Card
+    icon={
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.59 0 6.5 2.91 6.5 6.5s-2.91 6.5-6.5 6.5c-1.628 0-3.109-.59-4.242-1.57l-1.414 1.414c1.487 1.352 3.443 2.156 5.656 2.156 4.687 0 8.5-3.813 8.5-8.5s-3.813-8.5-8.5-8.5z" />
+      </svg>
+    }
+    title="Docker Compose デプロイ"
+    description="Docker Composeを使用して複数のサービスをオーケストレーションし、プロダクション環境やMySQL、Redisなどの依存関係が必要なシナリオに適しています。"
+    href="/ja/docs/installation/docker-compose-installation"
+  />
+  <Card
+    icon={
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.59 0 6.5 2.91 6.5 6.5s-2.91 6.5-6.5 6.5c-1.628 0-3.109-.59-4.242-1.57l-1.414 1.414c1.487 1.352 3.443 2.156 5.656 2.156 4.687 0 8.5-3.813 8.5-8.5s-3.813-8.5-8.5-8.5z" />
+      </svg>
+    }
+    title="Docker 単一コンテナデプロイ"
+    description="Dockerイメージを使用してNew APIを迅速にデプロイし、個人使用や小規模アプリケーションシナリオに適しています。"
+    href="/ja/docs/installation/docker-installation"
+  />
+  <Card
+    icon={<Server />}
+    title="1Panel パネルデプロイ"
+    description="1Panelパネルのグラフィカルインターフェースを使用して迅速にデプロイし、コマンドラインに不慣れなユーザーに適しています。"
+    href="/ja/docs/installation/1panel-installation"
+  />
+  <Card
+    icon={<Server />}
+    title="宝塔パネルデプロイ"
+    description="宝塔パネルのグラフィカルインターフェースを使用して迅速にデプロイし、コマンドラインに不慣れなユーザーに適しています。"
+    href="/ja/docs/installation/bt-docker-installation"
+  />
+  <Card
+    icon={<Network />}
+    title="クラスター デプロイ モード"
+    description="複数ノードの分散デプロイを実現し、高可用性、負荷分散、水平スケーリングを提供し、大規模アプリケーションやエンタープライズシナリオに適しています。"
+    href="/ja/docs/installation/cluster-deployment"
+  />
+  <Card
+    icon={<Code2 />}
+    title="ローカル開発デプロイ"
+    description="開発者がコード貢献や二次開発を行うのに適しており、完全なローカル開発環境設定ガイドを提供します。"
+    href="/ja/docs/installation/local-development"
+  />
+</Cards>
+
+## ドキュメントを閲覧する
+
+包括的なガイドとリソースを探索し、New APIの強力な機能を最大限に活用してください。
+
+<Cards>
+  <Card
+    icon={<BookOpen />}
+    title="プロジェクト紹介"
+    description="プロジェクトの紹介、機能説明、技術アーキテクチャ、ロードマップを理解します。"
+    href="/ja/docs/wiki/project-introduction"
+  />
+  <Card
+    icon={<Users />}
+    title="ユーザーガイド"
+    description="詳細な使用説明とベストプラクティス。"
+    href="/ja/docs/guide"
+  />
+  <Card
+    icon={<Code2 />}
+    title="APIドキュメント"
+    description="包括的なAPIインターフェースの説明と呼び出し例。"
+    href="/ja/docs/api"
+  />
+  <Card
+    icon={<Headphones />}
+    title="ヘルプサポート"
+    description="よくある質問とコミュニティ交流。"
+    href="/ja/docs/support"
+  />
+  <Card
+    icon={<List />}
+    title="使用ガイド"
+    description="クイックスタートガイドと詳細な手順説明。"
+    href="/ja/docs/guide"
+  />
+  <Card
+    icon={<Bot />}
+    title="AIアプリケーション"
+    description="New APIを基に開発された各種AIアプリケーションの例を探索します。"
+    href="/ja/docs/apps/cherry-studio"
+  />
+  <Card
+    icon={<Handshake />}
+    title="ビジネス協力"
+    description="私たちと協力し、AIエコシステムとビジネス機会を共に開拓しましょう。"
+    href="/ja/docs/business-cooperation"
+  />
+</Cards>
