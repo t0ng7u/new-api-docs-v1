@@ -40,11 +40,11 @@ function Header() {
         <p className="text-fd-muted-foreground text-xs">
           Powered by{' '}
           <a
-            href="https://inkeep.com"
+            href="https://www.newapi.ai"
             target="_blank"
             rel="noreferrer noopener"
           >
-            Inkeep AI
+            New API
           </a>
         </p>
       </div>
@@ -247,7 +247,7 @@ function Input(props: ComponentProps<'textarea'>) {
 
 const roleName: Record<string, string> = {
   user: 'you',
-  assistant: 'fumadocs',
+  assistant: 'New API Docs',
 };
 
 function Message({
