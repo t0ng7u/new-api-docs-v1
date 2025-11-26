@@ -1,0 +1,101 @@
+---
+title: トークン使用量照会（Token Usage）
+---
+
+<Callout type="info" title="機能説明">
+  認証により、現在のBearer Tokenのクォータ使用状況（付与総量、使用済み、残り、無制限かどうか、モデル制限、有効期限）を照会します。
+</Callout>
+
+## 📮 エンドポイント
+
+```
+GET /api/usage/token
+```
+
+- リクエストヘッダーに認証情報を含める必要があります
+- 現在のリクエストで使用されているTokenの使用量情報のみを返します
+
+## 🔐 認証
+
+リクエストヘッダーに以下の内容を含めてAPIキー認証を行います：
+
+```
+Authorization: Bearer $NEWAPI_API_KEY
+```
+
+- `sk-` プレフィックスの有無にかかわらず対応しており、サーバーが自動的に互換性を持たせます
+- Authorization ヘッダーが欠落しているか無効な場合、401が返されます
+
+## 💡 リクエスト例
+
+```bash
+curl -X GET https://あなたのnewapiサーバーアドレス/api/usage/token \
+  -H "Authorization: Bearer $NEWAPI_API_KEY"
+```
+
+## ✅ 成功レスポンス例
+
+```json
+{
+  "code": true,
+  "message": "ok",
+  "data": {
+    "object": "token_usage",
+    "name": "Default Token",
+    "total_granted": 1000000,
+    "total_used": 12345,
+    "total_available": 987655,
+    "unlimited_quota": false,
+    "model_limits": {
+      "gpt-4o-mini": true
+    },
+    "model_limits_enabled": false,
+    "expires_at": 0
+  }
+}
+```
+
+## ❗ エラーレスポンス例
+
+- 認証ヘッダーの欠落：
+
+```json
+{
+  "success": false,
+  "message": "No Authorization header"
+}
+```
+
+- Bearerスキーム以外：
+
+```json
+{
+  "success": false,
+  "message": "Invalid Bearer token"
+}
+```
+
+- Tokenの検索失敗（例：無効または削除済み）：
+
+```json
+{
+  "success": false,
+  "message": "token not found"
+}
+```
+
+## 🧾 フィールド説明（data）
+
+- `object`: `token_usage`は固定です
+- `name`: トークン名
+- `total_granted`: 付与総量（= 使用済み + 残り）
+- `total_used`: 使用済みクォータ
+- `total_available`: 利用可能な残りクォータ
+- `unlimited_quota`: 無制限クォータかどうか
+- `model_limits`: 利用可能なモデルのリスト
+- `model_limits_enabled`: モデル制限が有効かどうか
+- `expires_at`: 有効期限のUnixタイムスタンプ（秒）。永続的な場合は`0`を返します（バックエンドにより-1が0に正規化されます）
+
+---
+
+> 参考実装：PR [#1161](https://github.com/QuantumNous/new-api/pull/1161) で追加

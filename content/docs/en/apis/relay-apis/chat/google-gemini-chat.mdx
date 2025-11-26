@@ -1,0 +1,1209 @@
+---
+title: Google Gemini Conversation Format (Generate Content)
+---
+
+<Callout type="info" title="Official Documentation">
+  [Google Gemini Generating content
+  API](https://ai.google.dev/api/generate-content)
+</Callout>
+
+## 📝 Introduction
+
+The Google Gemini API supports generating content using images, audio, code, tools, and more. Given an input GenerateContentRequest, it generates a model response. It supports various functions such as text generation, visual understanding, audio processing, long context, code execution, JSON mode, function calling, and more.
+
+## 💡 Request Examples
+
+### Basic Text Conversation ✅
+
+```bash
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    -d '{
+      "contents": [{
+        "parts":[{"text": "Write a story about a magic backpack."}]
+        }]
+       }' 2> /dev/null
+```
+
+### Image Analysis Conversation ✅
+
+```bash
+# 使用临时文件保存base64编码的图片数据
+TEMP_B64=$(mktemp)
+trap 'rm -f "$TEMP_B64"' EXIT
+base64 $B64FLAGS $IMG_PATH > "$TEMP_B64"
+
+# 使用临时文件保存JSON载荷
+TEMP_JSON=$(mktemp)
+trap 'rm -f "$TEMP_JSON"' EXIT
+
+cat > "$TEMP_JSON" `<< EOF
+{
+  "contents": [{
+    "parts":[
+      {"text": "Tell me about this instrument"},
+      {
+        "inline_data": {
+          "mime_type":"image/jpeg",
+          "data": "$(cat "$TEMP_B64")"
+        }
+      }
+    ]
+  }]
+}
+EOF
+
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    -d "@$TEMP_JSON" 2>` /dev/null
+```
+
+### Function Calling ✅
+
+```bash
+cat > tools.json `<< EOF
+{
+  "function_declarations": [
+    {
+      "name": "enable_lights",
+      "description": "Turn on the lighting system."
+    },
+    {
+      "name": "set_light_color",
+      "description": "Set the light color. Lights must be enabled for this to work.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "rgb_hex": {
+            "type": "string",
+            "description": "The light color as a 6-digit hex string, e.g. ff0000 for red."
+          }
+        },
+        "required": [
+          "rgb_hex"
+        ]
+      }
+    },
+    {
+      "name": "stop_lights",
+      "description": "Turn off the lighting system."
+    }
+  ]
+}
+EOF
+
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d @<(echo '
+  {
+    "system_instruction": {
+      "parts": {
+        "text": "You are a helpful lighting system bot. You can turn lights on and off, and you can set the color. Do not perform any other tasks."
+      }
+    },
+    "tools": ['$(cat tools.json)'],
+
+    "tool_config": {
+      "function_calling_config": {"mode": "auto"}
+    },
+
+    "contents": {
+      "role": "user",
+      "parts": {
+        "text": "Turn on the lights please."
+      }
+    }
+  }
+') 2>`/dev/null |sed -n '/"content"/,/"finishReason"/p'
+```
+
+### JSON Mode Response ✅
+
+```bash
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{
+    "contents": [{
+      "parts":[
+        {"text": "List 5 popular cookie recipes"}
+        ]
+    }],
+    "generationConfig": {
+        "response_mime_type": "application/json",
+        "response_schema": {
+          "type": "ARRAY",
+          "items": {
+            "type": "OBJECT",
+            "properties": {
+              "recipe_name": {"type":"STRING"},
+            }
+          }
+        }
+    }
+}' 2> /dev/null | head
+```
+
+### Audio Processing 🟡
+
+<Callout type="warn" title="File Upload Limitations">
+  Only supports uploading audio via `inline_data` as base64; `file_data.file_uri`
+  or File API are not supported.
+</Callout>
+
+```bash
+# 使用File API上传音频数据到API请求
+# 使用 base64 inline_data 上传音频数据到 API 请求
+if [[ "$(base64 --version 2>&1)" = *"FreeBSD"* ]]; then
+  B64FLAGS="--input"
+else
+  B64FLAGS="-w0"
+fi
+AUDIO_B64=$(base64 $B64FLAGS "$AUDIO_PATH")
+
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -X POST \
+  -d '{
+    "contents": [{
+      "parts": [
+        {"text": "Please describe this audio file."},
+        {"inline_data": {"mime_type": "audio/mpeg", "data": "'$AUDIO_B64'"}}
+      ]
+    }]
+  }' 2> /dev/null | jq ".candidates[].content.parts[].text"
+```
+
+### Video Processing 🟡
+
+<Callout type="warn" title="File Upload Limitations">
+  Only supports uploading video via `inline_data` as base64; `file_data.file_uri`
+  or File API are not supported.
+</Callout>
+
+```bash
+# 使用File API上传视频数据到API请求
+# 使用 base64 inline_data 上传视频数据到 API 请求
+if [[ "$(base64 --version 2>&1)" = *"FreeBSD"* ]]; then
+  B64FLAGS="--input"
+else
+  B64FLAGS="-w0"
+fi
+VIDEO_B64=$(base64 $B64FLAGS "$VIDEO_PATH")
+
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -X POST \
+  -d '{
+    "contents": [{
+      "parts": [
+        {"text": "Transcribe the audio from this video and provide visual descriptions."},
+        {"inline_data": {"mime_type": "video/mp4", "data": "'$VIDEO_B64'"}}
+      ]
+    }]
+  }' 2> /dev/null | jq ".candidates[].content.parts[].text"
+```
+
+### PDF Processing 🟡
+
+<Callout type="warn" title="File Upload Limitations">
+  Only supports uploading PDF via `inline_data` as base64; `file_data.file_uri`
+  or File API are not supported.
+</Callout>
+
+```bash
+MIME_TYPE=$(file -b --mime-type "${PDF_PATH}")
+# 使用 base64 inline_data 上传 PDF 文件到 API 请求
+if [[ "$(base64 --version 2>&1)" = *"FreeBSD"* ]]; then
+  B64FLAGS="--input"
+else
+  B64FLAGS="-w0"
+fi
+PDF_B64=$(base64 $B64FLAGS "$PDF_PATH")
+
+echo $MIME_TYPE
+
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -X POST \
+  -d '{
+    "contents": [{
+      "parts": [
+        {"text": "Can you add a few more lines to this poem?"},
+        {"inline_data": {"mime_type": "application/pdf", "data": "'$PDF_B64'"}}
+      ]
+    }]
+  }' 2> /dev/null | jq ".candidates[].content.parts[].text"
+```
+
+### Chat Conversation ✅
+
+```bash
+curl https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    -d '{
+      "contents": [
+        {"role":"user",
+         "parts":[{
+           "text": "Hello"}]},
+        {"role": "model",
+         "parts":[{
+           "text": "Great to meet you. What would you like to know?"}]},
+        {"role":"user",
+         "parts":[{
+           "text": "I have two dogs in my house. How many paws are in my house?"}]},
+      ]
+    }' 2> /dev/null | grep "text"
+```
+
+### Streaming Response ✅
+
+```bash
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=$NEWAPI_API_KEY" \
+    -H 'Content-Type: application/json' \
+    --no-buffer \
+    -d '{
+      "contents": [{
+        "parts": [{"text": "写一个关于魔法背包的故事"}]
+      }]
+    }'
+```
+
+### Code Execution ✅
+
+```bash
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    -d '{
+      "contents": [{
+        "parts": [{"text": "计算斐波那契数列的第10项"}]
+      }],
+      "tools": [{
+        "codeExecution": {}
+      }]
+    }'
+```
+
+### Generation Configuration ✅
+
+```bash
+curl https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    -d '{
+        "contents": [{
+            "parts":[
+                {"text": "Explain how AI works"}
+            ]
+        }],
+        "generationConfig": {
+            "stopSequences": [
+                "Title"
+            ],
+            "temperature": 1.0,
+            "maxOutputTokens": 800,
+            "topP": 0.8,
+            "topK": 10
+        }
+    }'  2> /dev/null | grep "text"
+```
+
+### Safety Settings ✅
+
+```bash
+echo '{
+    "safetySettings": [
+        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
+        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
+    ],
+    "contents": [{
+        "parts":[{
+            "text": "'I support Martians Soccer Club and I think Jupiterians Football Club sucks! Write a ironic phrase about them.'"}]}]}' > request.json
+
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+    -H 'Content-Type: application/json' \
+    -X POST \
+    -d @request.json 2> /dev/null
+```
+
+### System Instruction ✅
+
+```bash
+curl "https://你的newapi服务器地址/v1beta/models/gemini-2.0-flash:generateContent?key=$NEWAPI_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{ "system_instruction": {
+    "parts":
+      { "text": "You are a cat. Your name is Neko."}},
+    "contents": {
+      "parts": {
+        "text": "Hello there"}}}'
+```
+
+## 📮 Requests
+
+### Endpoints
+
+#### Generate Content
+
+```
+POST https://你的newapi服务器地址/v1beta/{model=models/*}:generateContent
+```
+
+#### Stream Generate Content
+
+```
+POST https://你的newapi服务器地址/v1beta/{model=models/*}:streamGenerateContent
+```
+
+### Authentication Method
+
+Include the API key in the request URL parameters:
+
+```
+?key=$NEWAPI_API_KEY
+```
+
+Where `$NEWAPI_API_KEY` is your Google AI API key.
+
+### Path Parameters
+
+#### `model`
+
+- Type: string
+- Required: Yes
+
+The name of the model used to generate completions.
+
+Format: `models/{model}`, e.g., `models/gemini-2.0-flash`
+
+### Request Body Parameters
+
+#### `contents`
+
+- Type: array
+- Required: Yes
+
+The content of the current conversation with the model. For single-turn queries, this is a single instance. For multi-turn queries like chat, this is a repeated field containing the conversation history and the latest request.
+
+**Content Object Properties:**
+
+| Property | Type   | Required | Description                                                      |
+| -------- | ------ | -------- | ---------------------------------------------------------------- |
+| `parts`  | array  | Yes      | Ordered parts of the content, forming a single message           |
+| `role`   | string | No       | The producer of the content in the conversation. `user`, `model`, `function`, or `tool` |
+
+**Part Object Properties:**
+
+| Property              | Type   | Required | Description                     |
+| --------------------- | ------ | -------- | ------------------------------- |
+| `text`                | string | No       | Plain text content              |
+| `inlineData`          | object | No       | Inline media byte data          |
+| `fileData`            | object | No       | URI reference to an uploaded file |
+| `functionCall`        | object | No       | Function call request           |
+| `functionResponse`    | object | No       | Function call response          |
+| `executableCode`      | object | No       | Executable code                 |
+| `codeExecutionResult` | object | No       | Code execution result           |
+
+**InlineData Object Properties:**
+
+| Property   | Type   | Required | Description                 |
+| ---------- | ------ | -------- | --------------------------- |
+| `mimeType` | string | Yes      | MIME type of the media      |
+| `data`     | string | Yes      | Base64-encoded media data   |
+
+**FileData Object Properties:**
+
+| Property  | Type   | Required | Description              |
+| --------- | ------ | -------- | ------------------------ |
+| `mimeType` | string | Yes      | MIME type of the file    |
+| `fileUri`  | string | Yes      | URI of the file          |
+
+#### `tools`
+
+- Type: array
+- Required: No
+
+List of tools the model may use to generate the next response. Supported tools include functions and code execution.
+
+**Tool Object Properties:**
+
+| Property               | Type | Required | Description                            |
+| ---------------------- | ---- | -------- | -------------------------------------- |
+| `functionDeclarations` | array | No       | Optional list of function declarations |
+| `codeExecution`        | object | No       | Enables the model to execute code      |
+
+**FunctionDeclaration Object Properties:**
+
+| Property      | Type   | Required | Description                             |
+| ------------- | ------ | -------- | --------------------------------------- |
+| `name`        | string | Yes      | Function name                           |
+| `description` | string | No       | Description of the function's capabilities |
+| `parameters`  | object | No       | Function parameters, in JSON Schema format |
+
+**FunctionCall Object Properties:**
+
+| Property | Type   | Required | Description                     |
+| -------- | ------ | -------- | ------------------------------- |
+| `name`   | string | Yes      | Name of the function to call    |
+| `args`   | object | No       | Key-value pairs of function arguments |
+
+**FunctionResponse Object Properties:**
+
+| Property   | Type   | Required | Description                        |
+| ---------- | ------ | -------- | ---------------------------------- |
+| `name`     | string | Yes      | Name of the called function        |
+| `response` | object | Yes      | Response data from the function call |
+
+**ExecutableCode Object Properties:**
+
+| Property   | Type   | Required | Description                      |
+| ---------- | ------ | -------- | -------------------------------- |
+| `language` | enum   | Yes      | Programming language of the code |
+| `code`     | string | Yes      | Code to be executed              |
+
+**CodeExecutionResult Object Properties:**
+
+| Property | Type   | Required | Description                       |
+| -------- | ------ | -------- | --------------------------------- |
+| `outcome` | enum   | Yes      | Result status of code execution   |
+| `output` | string | No       | Output content of code execution  |
+
+**CodeExecution Object Properties:**
+
+| Property | Type   | Required | Description                                  |
+| -------- | ------ | -------- | -------------------------------------------- |
+| {}       | empty object | -        | Empty configuration object to enable code execution functionality |
+
+#### `toolConfig`
+
+- Type: object
+- Required: No
+
+Tool configuration for any tools specified in the request.
+
+**ToolConfig Object Properties:**
+
+| Property                | Type | Required | Description                        |
+| ----------------------- | ---- | -------- | ---------------------------------- |
+| `functionCallingConfig` | object | No       | Function calling configuration     |
+
+**FunctionCallingConfig Object Properties:**
+
+| Property               | Type | Required | Description                           |
+| ---------------------- | ---- | -------- | ------------------------------------- |
+| `mode`                 | enum | No       | Specifies the mode for function calling |
+| `allowedFunctionNames` | array | No       | List of allowed function names to call |
+
+**FunctionCallingMode Enum Values:**
+
+- `MODE_UNSPECIFIED`: Default mode, the model decides whether to call a function
+- `AUTO`: The model automatically decides when to call a function
+- `ANY`: The model must call a function
+- `NONE`: The model cannot call a function
+
+#### `safetySettings`
+
+- Type: array
+- Required: No
+
+List of SafetySetting instances used to block unsafe content.
+
+**SafetySetting Object Properties:**
+
+| Property    | Type | Required | Description         |
+| ----------- | ---- | -------- | ------------------- |
+| `category`  | enum | Yes      | Safety category     |
+| `threshold` | enum | Yes      | Blocking threshold  |
+
+**HarmCategory Enum Values:**
+
+- `HARM_CATEGORY_HARASSMENT`: Harassment content
+- `HARM_CATEGORY_HATE_SPEECH`: Hate speech and content
+- `HARM_CATEGORY_SEXUALLY_EXPLICIT`: Sexually explicit content
+- `HARM_CATEGORY_DANGEROUS_CONTENT`: Dangerous content
+- `HARM_CATEGORY_CIVIC_INTEGRITY`: Content that may be used to undermine civic integrity
+
+**HarmBlockThreshold Enum Values:**
+
+- `BLOCK_LOW_AND_ABOVE`: Allows content rated NEGLIGIBLE
+- `BLOCK_MEDIUM_AND_ABOVE`: Allows content rated NEGLIGIBLE and LOW
+- `BLOCK_ONLY_HIGH`: Allows content with risk levels NEGLIGIBLE, LOW, and MEDIUM
+- `BLOCK_NONE`: Allows all content
+- `OFF`: Turns off the safety filter
+
+**HarmBlockThreshold Full Enum Values:**
+
+- `HARM_BLOCK_THRESHOLD_UNSPECIFIED`: Unspecified threshold
+- `BLOCK_LOW_AND_ABOVE`: Blocks harmful content with low probability and above, only allowing NEGLIGIBLE level content
+- `BLOCK_MEDIUM_AND_ABOVE`: Blocks harmful content with medium probability and above, allowing NEGLIGIBLE and LOW level content
+- `BLOCK_ONLY_HIGH`: Blocks only harmful content with high probability, allowing NEGLIGIBLE, LOW, and MEDIUM level content
+- `BLOCK_NONE`: Blocks no content, allowing all levels of content
+- `OFF`: Completely turns off the safety filter
+
+#### `systemInstruction`
+
+- Type: object (Content)
+- Required: No
+
+System instruction set by the developer. Currently, only text is supported.
+
+#### `generationConfig`
+
+- Type: object
+- Required: No
+
+Configuration options for model generation and output.
+
+**GenerationConfig Object Properties:**
+
+| Property                     | Type   | Required | Description                                             |
+| ---------------------------- | ------ | -------- | ------------------------------------------------------- |
+| `stopSequences`              | array  | No       | Set of character sequences (up to 5) that will stop output generation |
+| `responseMimeType`           | string | No       | MIME type of the generated candidate text               |
+| `responseSchema`             | object | No       | Output schema for the generated candidate text          |
+| `responseModalities`         | array  | No       | Requested response modalities                           |
+| `candidateCount`             | integer | No       | Number of generated responses to return                 |
+| `maxOutputTokens`            | integer | No       | Upper limit on the number of tokens included in the candidate response |
+| `temperature`                | number | No       | Controls the randomness of the output, range [0.0, 2.0] |
+| `topP`                       | number | No       | Upper limit on the cumulative probability of tokens to consider during sampling |
+| `topK`                       | integer | No       | Upper limit on the number of tokens to consider during sampling |
+| `seed`                       | integer | No       | Seed used in decoding                                   |
+| `presencePenalty`            | number | No       | Presence penalty                                        |
+| `frequencyPenalty`           | number | No       | Frequency penalty                                       |
+| `responseLogprobs`           | boolean | No       | Whether to export logprobs results in the response      |
+| `logprobs`                   | integer | No       | Number of top logprobs to return                        |
+| `enableEnhancedCivicAnswers` | boolean | No       | Enable enhanced civic service answers                   |
+| `speechConfig`               | object | No       | Speech generation configuration                         |
+| `thinkingConfig`             | object | No       | Configuration for thinking functionality                |
+| `mediaResolution`            | enum   | No       | Specified media resolution                              |
+
+**Supported MIME Types:**
+
+- `text/plain`: (Default) Text output
+- `application/json`: JSON response
+- `text/x.enum`: ENUM as string response
+
+**Modality Enum Values:**
+
+- `TEXT`: Indicates the model should return text
+- `IMAGE`: Indicates the model should return images
+- `AUDIO`: Indicates the model should return audio
+
+**Schema Object Properties:**
+
+| Property      | Type     | Required | Description                                     |
+| ------------- | -------- | -------- | ----------------------------------------------- |
+| `type`        | enum     | Yes      | Data type                                       |
+| `description` | string   | No       | Field description                               |
+| `enum`        | array    | No       | List of enum values (when type is string)       |
+| `example`     | any type | No       | Example value                                   |
+| `nullable`    | boolean  | No       | Whether it can be null                          |
+| `format`      | string   | No       | String format (e.g., date, date-time, etc.)     |
+| `items`       | object   | No       | Schema for array items (when type is array)     |
+| `properties`  | object   | No       | Schema mapping for object properties (when type is object) |
+| `required`    | array    | No       | List of required property names                 |
+| `minimum`     | number   | No       | Minimum value for numbers                       |
+| `maximum`     | number   | No       | Maximum value for numbers                       |
+| `minItems`    | integer  | No       | Minimum length for arrays                       |
+| `maxItems`    | integer  | No       | Maximum length for arrays                       |
+| `minLength`   | integer  | No       | Minimum length for strings                      |
+| `maxLength`   | integer  | No       | Maximum length for strings                      |
+
+**Type Enum Values:**
+
+- `TYPE_UNSPECIFIED`: Unspecified type
+- `STRING`: String type
+- `NUMBER`: Number type
+- `INTEGER`: Integer type
+- `BOOLEAN`: Boolean type
+- `ARRAY`: Array type
+- `OBJECT`: Object type
+
+**Supported Programming Languages (ExecutableCode):**
+
+- `LANGUAGE_UNSPECIFIED`: Unspecified language
+- `PYTHON`: Python programming language
+
+**Code Execution Result Enum (Outcome):**
+
+- `OUTCOME_UNSPECIFIED`: Unspecified result
+- `OUTCOME_OK`: Code execution successful
+- `OUTCOME_FAILED`: Code execution failed
+- `OUTCOME_DEADLINE_EXCEEDED`: Code execution timed out
+
+#### `cachedContent`
+
+- Type: string
+- Required: No
+
+The name of the cached content to be used as context for providing predictions. Format: `cachedContents/{cachedContent}`
+
+## 📥 Responses
+
+### GenerateContentResponse
+
+Responses from models that support multiple candidate answers. Safety ratings and content filtering are reported for the prompt and each candidate.
+
+#### `candidates`
+
+- Type: array
+- Description: List of candidate responses from the model
+
+**Candidate Object Properties:**
+
+| Property                | Type | Description                                             |
+| ----------------------- | ---- | ------------------------------------------------------- |
+| `content`               | object | Generated content returned by the model                 |
+| `finishReason`          | enum | Reason why the model stopped generating tokens          |
+| `safetyRatings`         | array | List of safety ratings for the candidate response       |
+| `citationMetadata`      | object | Citation information for the model-generated candidate  |
+| `tokenCount`            | integer | Number of tokens for this candidate                     |
+| `groundingAttributions` | array | Attribution information for sources referenced to generate grounded responses |
+| `groundingMetadata`     | object | Reference metadata for the candidate object             |
+| `avgLogprobs`           | number | Average log probability score for the candidate         |
+| `logprobsResult`        | object | Log-likelihood scores for response tokens and preceding tokens |
+| `urlRetrievalMetadata`  | object | Metadata related to URL context retrieval tool          |
+| `urlContextMetadata`    | object | Metadata related to URL context retrieval tool          |
+| `index`                 | integer | Index of the candidate in the response candidate list   |
+
+**FinishReason Enum Values:**
+
+- `STOP`: Natural stopping point of the model or provided stop sequence
+- `MAX_TOKENS`: Maximum number of tokens specified in the request has been reached
+- `SAFETY`: Response candidate has been flagged for safety concerns
+- `RECITATION`: Response candidate has been flagged due to recitation reasons
+- `LANGUAGE`: Response candidate has been flagged due to unsupported language
+- `OTHER`: Unknown reason
+- `BLOCKLIST`: Token generation has stopped because the content contains prohibited words
+- `PROHIBITED_CONTENT`: Token generation has stopped due to potentially prohibited content
+- `SPII`: Token generation has stopped due to potentially sensitive personally identifiable information
+- `MALFORMED_FUNCTION_CALL`: The function call generated by the model is invalid
+- `IMAGE_SAFETY`: Token generation has stopped because the generated image violates safety regulations
+
+#### `promptFeedback`
+
+- Type: object
+- Description: Prompt feedback related to content filters
+
+**PromptFeedback Object Properties:**
+
+| Property        | Type | Description                     |
+| --------------- | ---- | ------------------------------- |
+| `blockReason`   | enum | Reason for blocking this prompt |
+| `safetyRatings` | array | Safety ratings for the prompt   |
+
+**BlockReason Enum Values:**
+
+- `BLOCK_REASON_UNSPECIFIED`: Default value, this value is not used
+- `SAFETY`: The prompt was blocked for safety reasons
+- `OTHER`: The prompt was blocked for an unknown reason
+- `BLOCKLIST`: The prompt was blocked because it contained terms from the term blocklist
+- `PROHIBITED_CONTENT`: The prompt was blocked because it contained prohibited content
+- `IMAGE_SAFETY`: The candidate image was blocked due to unsafe content generation
+
+#### `usageMetadata`
+
+- Type: object
+- Description: Metadata about token usage for the generation request
+
+**UsageMetadata Object Properties:**
+
+| Property                     | Type | Description                                             |
+| ---------------------------- | ---- | ------------------------------------------------------- |
+| `promptTokenCount`           | integer | Number of tokens in the prompt                          |
+| `cachedContentTokenCount`    | integer | Number of tokens in the cached part of the prompt       |
+| `candidatesTokenCount`       | integer | Total number of tokens across all generated candidate responses |
+| `totalTokenCount`            | integer | Total number of tokens for the generation request       |
+| `toolUsePromptTokenCount`    | integer | Number of tokens in the tool use prompt                 |
+| `thoughtsTokenCount`         | integer | Number of thought tokens for the thinking model         |
+| `promptTokensDetails`        | array | List of modalities processed in the request input       |
+| `candidatesTokensDetails`    | array | List of modalities returned in the response             |
+| `cacheTokensDetails`         | array | List of modalities for cached content in the request input |
+| `toolUsePromptTokensDetails` | array | List of modalities processed for tool use request input |
+
+#### `modelVersion`
+
+- Type: string
+- Description: Model version used to generate the response
+
+#### `responseId`
+
+- Type: string
+- Description: ID used to identify each response
+
+#### Full Response Example
+
+```json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "你好！我是 Gemini，一个由 Google 开发的人工智能助手。我可以帮助您解答问题、提供信息、协助写作、代码编程等多种任务。请告诉我有什么可以为您效劳的！"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0,
+      "safetyRatings": [
+        {
+          "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          "probability": "NEGLIGIBLE",
+          "blocked": false
+        },
+        {
+          "category": "HARM_CATEGORY_HATE_SPEECH",
+          "probability": "NEGLIGIBLE",
+          "blocked": false
+        },
+        {
+          "category": "HARM_CATEGORY_HARASSMENT",
+          "probability": "NEGLIGIBLE",
+          "blocked": false
+        },
+        {
+          "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+          "probability": "NEGLIGIBLE",
+          "blocked": false
+        }
+      ],
+      "tokenCount": 47
+    }
+  ],
+  "promptFeedback": {
+    "safetyRatings": [
+      {
+        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        "probability": "NEGLIGIBLE"
+      },
+      {
+        "category": "HARM_CATEGORY_HATE_SPEECH",
+        "probability": "NEGLIGIBLE"
+      }
+    ]
+  },
+  "usageMetadata": {
+    "promptTokenCount": 4,
+    "candidatesTokenCount": 47,
+    "totalTokenCount": 51,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 4
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 47
+      }
+    ]
+  },
+  "modelVersion": "gemini-2.0-flash",
+  "responseId": "response-12345"
+}
+```
+
+## 🔧 Advanced Features
+
+### Safety Rating
+
+**SafetyRating Object Properties:**
+
+| Property      | Type   | Description                                |
+| ------------- | ------ | ------------------------------------------ |
+| `category`    | enum   | Category for this rating                   |
+| `probability` | enum   | Harm probability of this content           |
+| `blocked`     | boolean | Whether this content was blocked due to this rating |
+
+**HarmProbability Enum Values:**
+
+- `NEGLIGIBLE`: Negligible probability of content being unsafe
+- `LOW`: Low probability of content being unsafe
+- `MEDIUM`: Medium probability of content being unsafe
+- `HIGH`: High probability of content being unsafe
+
+### Citation Metadata
+
+**CitationMetadata Object Properties:**
+
+| Property          | Type | Description                        |
+| ----------------- | ---- | ---------------------------------- |
+| `citationSources` | array | Source citations for specific responses |
+
+**CitationSource Object Properties:**
+
+| Property     | Type   | Description                                             |
+| ------------ | ------ | ------------------------------------------------------- |
+| `startIndex` | integer | Starting index of the response segment attributed to this source |
+| `endIndex`   | integer | Ending index (exclusive) of the attribution segment     |
+| `uri`        | string | URI attributed as the source for the text part          |
+| `license`    | string | License of the GitHub project attributed as the source for the segment |
+
+### Code Execution
+
+When the code execution tool is enabled, the model can generate and execute code to solve problems.
+
+**Code Execution Example Response:**
+
+```json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "我来计算斐波那契数列的第10项："
+          },
+          {
+            "executableCode": {
+              "language": "PYTHON",
+              "code": "def fibonacci(n):\n    if n <= 1:\n        return n\n    else:\n        return fibonacci(n-1) + fibonacci(n-2)\n\nresult = fibonacci(10)\nprint(f'第10项斐波那契数是: {result}')"
+            }
+          },
+          {
+            "codeExecutionResult": {
+              "outcome": "OK",
+              "output": "第10项斐波那契数是: 55"
+            }
+          },
+          {
+            "text": "所以斐波那契数列的第10项是55。"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP"
+    }
+  ]
+}
+```
+
+### Grounding Functionality (Grounding)
+
+**GroundingMetadata Object Properties:**
+
+| Property            | Type | Description                                             |
+| ------------------- | ---- | ------------------------------------------------------- |
+| `groundingChunks`   | array | List of supporting references retrieved from the specified grounding source |
+| `groundingSupports` | array | List of grounding supports                              |
+| `webSearchQueries`  | array | Web search queries for subsequent web searches          |
+| `searchEntryPoint`  | object | Google Search entry point for subsequent web searches   |
+| `retrievalMetadata` | object | Metadata related to retrieval in the grounding process  |
+
+**GroundingAttribution Object Properties:**
+
+| Property  | Type | Description                                |
+| --------- | ---- | ------------------------------------------ |
+| `sourceId` | object | Identifier of the source that contributed to this attribution |
+| `content` | object | Source content that constitutes this attribution |
+
+**AttributionSourceId Object Properties:**
+
+| Property                 | Type | Description                                             |
+| ------------------------ | ---- | ------------------------------------------------------- |
+| `groundingPassage`       | object | Identifier for an inline passage                        |
+| `semanticRetrieverChunk` | object | Identifier for a Chunk extracted by Semantic Retriever  |
+
+**GroundingPassageId Object Properties:**
+
+| Property    | Type   | Description                                                     |
+| ----------- | ------ | --------------------------------------------------------------- |
+| `passageId` | string | ID of the passage matching `GroundingPassage.id` of `GenerateAnswerRequest` |
+| `partIndex` | integer | Index of the part in `GroundingPassage.content` of `GenerateAnswerRequest` |
+
+**SemanticRetrieverChunk Object Properties:**
+
+| Property | Type   | Description                                                 |
+| -------- | ------ | ----------------------------------------------------------- |
+| `source` | string | Name of the source matching `SemanticRetrieverConfig.source` of the request |
+| `chunk`  | string | Name of the Chunk containing the attributed text            |
+
+**SearchEntryPoint Object Properties:**
+
+| Property          | Type   | Description                                             |
+| ----------------- | ------ | ------------------------------------------------------- |
+| `renderedContent` | string | Web content snippet that can be embedded in a web page or WebView |
+| `sdkBlob`         | string | Base64-encoded JSON representing an array of search term and search URL tuples |
+
+**Segment Object Properties:**
+
+| Property     | Type   | Description                                     |
+| ------------ | ------ | ----------------------------------------------- |
+| `partIndex`  | integer | Index of the Part object in its parent Content object |
+| `startIndex` | integer | Starting index in the given part, in bytes      |
+| `endIndex`   | integer | Ending index (exclusive) in the given chunk, in bytes |
+| `text`       | string | Text corresponding to the segment in the response |
+
+**RetrievalMetadata Object Properties:**
+
+| Property                          | Type | Description                                             |
+| --------------------------------- | ---- | ------------------------------------------------------- |
+| `googleSearchDynamicRetrievalScore` | number | Probability score (range [0,1]) that information from Google Search helped answer the question |
+
+**GroundingChunk Object Properties:**
+
+| Property | Type | Description                   |
+| -------- | ---- | ----------------------------- |
+| `web`    | object | Grounding chunk from the web  |
+
+**Web Object Properties:**
+
+| Property | Type   | Description                 |
+| -------- | ------ | --------------------------- |
+| `uri`    | string | URI reference of the chunk  |
+| `title`  | string | Title of the data chunk     |
+
+**GroundingSupport Object Properties:**
+
+| Property                | Type | Description                                             |
+| ----------------------- | ---- | ------------------------------------------------------- |
+| `groundingChunkIndices` | array | List of indices specifying citations related to copyright claims |
+| `confidenceScores`      | array | Confidence scores for supporting reference documents, range 0 to 1 |
+| `segment`               | object | Content segment to which this support request belongs   |
+
+### Multimodal Processing
+
+The Gemini API supports processing inputs and outputs in multiple modalities:
+
+**Supported Input Modalities:**
+
+- `TEXT`: Plain text
+- `IMAGE`: Images (JPEG, PNG, WebP, HEIC, HEIF)
+- `AUDIO`: Audio (WAV, MP3, AIFF, AAC, OGG, FLAC)
+- `VIDEO`: Video (MP4, MPEG, MOV, AVI, FLV, MPG, WEBM, WMV, 3GPP)
+- `DOCUMENT`: Documents (PDF)
+
+**ModalityTokenCount Object Properties:**
+
+| Property   | Type | Description                          |
+| ---------- | ---- | ------------------------------------ |
+| `modality` | enum | Modality associated with this token count |
+| `tokenCount` | integer | Number of tokens                     |
+
+**MediaResolution Enum Values:**
+
+- `MEDIA_RESOLUTION_LOW`: Low resolution (64 tokens)
+- `MEDIA_RESOLUTION_MEDIUM`: Medium resolution (256 tokens)
+- `MEDIA_RESOLUTION_HIGH`: High resolution (256 tokens for scaled reframing)
+
+### Thinking Functionality
+
+**ThinkingConfig Object Properties:**
+
+| Property          | Type   | Description                               |
+| ----------------- | ------ | ----------------------------------------- |
+| `includeThoughts` | boolean | Whether to include thoughts in the response |
+| `thinkingBudget`  | integer | Number of thought tokens the model should generate |
+
+### Speech Generation
+
+**SpeechConfig Object Properties:**
+
+| Property                  | Type   | Description                               |
+| ------------------------- | ------ | ----------------------------------------- |
+| `voiceConfig`             | object | Configuration for single-voice output     |
+| `multiSpeakerVoiceConfig` | object | Configuration for multi-speaker settings  |
+| `languageCode`            | string | Language code for speech synthesis        |
+
+**VoiceConfig Object Properties:**
+
+| Property              | Type | Description                               |
+| --------------------- | ---- | ----------------------------------------- |
+| `prebuiltVoiceConfig` | object | Configuration for the prebuilt voice to use |
+
+**PrebuiltVoiceConfig Object Properties:**
+
+| Property    | Type   | Description                           |
+| ----------- | ------ | ------------------------------------- |
+| `voiceName` | string | Name of the preset voice to use       |
+
+**MultiSpeakerVoiceConfig Object Properties:**
+
+| Property                | Type | Description                       |
+| ----------------------- | ---- | --------------------------------- |
+| `speakerVoiceConfigs` | array | All enabled speaker voices        |
+
+**SpeakerVoiceConfig Object Properties:**
+
+| Property      | Type   | Description                       |
+| ------------- | ------ | --------------------------------- |
+| `speaker`     | string | Name of the speaker to use        |
+| `voiceConfig` | object | Configuration for the voice to use |
+
+**Supported Language Codes:**
+
+- `zh-CN`: Chinese (Simplified)
+- `en-US`: English (United States)
+- `ja-JP`: Japanese
+- `ko-KR`: Korean
+- `fr-FR`: French
+- `de-DE`: German
+- `es-ES`: Spanish
+- `pt-BR`: Portuguese (Brazil)
+- `hi-IN`: Hindi
+- `ar-XA`: Arabic
+- `it-IT`: Italian
+- `tr-TR`: Turkish
+- `vi-VN`: Vietnamese
+- `th-TH`: Thai
+- `ru-RU`: Russian
+- `pl-PL`: Polish
+- `nl-NL`: Dutch
+
+### Logprobs Results
+
+**LogprobsResult Object Properties:**
+
+| Property           | Type | Description                                             |
+| ------------------ | ---- | ------------------------------------------------------- |
+| `topCandidates`    | array | Length equals the total number of decoding steps        |
+| `chosenCandidates` | array | Length equals the total number of decoding steps, chosen candidates are not necessarily in topCandidates |
+
+**TopCandidates Object Properties:**
+
+| Property   | Type | Description                               |
+| ---------- | ---- | ----------------------------------------- |
+| `candidates` | array | Candidates sorted by log probability in descending order |
+
+**Candidate (Logprobs) Object Properties:**
+
+| Property         | Type   | Description                          |
+| ---------------- | ------ | ------------------------------------ |
+| `token`          | string | Token string value of the candidate  |
+| `tokenId`        | integer | Token ID value of the candidate      |
+| `logProbability` | number | Log probability of the candidate     |
+
+### URL Retrieval Functionality
+
+**UrlRetrievalMetadata Object Properties:**
+
+| Property               | Type | Description                       |
+| ---------------------- | ---- | --------------------------------- |
+| `urlRetrievalContexts` | array | List of URL retrieval contexts    |
+
+**UrlRetrievalContext Object Properties:**
+
+| Property       | Type   | Description                 |
+| -------------- | ------ | --------------------------- |
+| `retrievedUrl` | string | URL retrieved by the tool   |
+
+**UrlContextMetadata Object Properties:**
+
+| Property      | Type | Description                 |
+| ------------- | ---- | --------------------------- |
+| `urlMetadata` | array | List of URL contexts        |
+
+**UrlMetadata Object Properties:**
+
+| Property           | Type   | Description                 |
+| ------------------ | ------ | --------------------------- |
+| `retrievedUrl`     | string | URL retrieved by the tool   |
+| `urlRetrievalStatus` | enum   | Status of URL retrieval     |
+
+**UrlRetrievalStatus Enum Values:**
+
+- `URL_RETRIEVAL_STATUS_SUCCESS`: URL retrieval successful
+- `URL_RETRIEVAL_STATUS_ERROR`: URL retrieval failed due to an error
+
+### Full Safety Categories
+
+**HarmCategory Full Enum Values:**
+
+- `HARM_CATEGORY_UNSPECIFIED`: Category unspecified
+- `HARM_CATEGORY_DEROGATORY`: PaLM - Negative or harmful comments targeting identity and/or protected attributes
+- `HARM_CATEGORY_TOXICITY`: PaLM - Rude, disrespectful, or profane content
+- `HARM_CATEGORY_VIOLENCE`: PaLM - Describes scenes depicting violent acts against individuals or groups
+- `HARM_CATEGORY_SEXUAL`: PaLM - Contains references to sexual acts or other obscene content
+- `HARM_CATEGORY_MEDICAL`: PaLM - Promotes unverified medical advice
+- `HARM_CATEGORY_DANGEROUS`: PaLM - Dangerous content promotes, facilitates, or encourages harmful behavior
+- `HARM_CATEGORY_HARASSMENT`: Gemini - Harassment content
+- `HARM_CATEGORY_HATE_SPEECH`: Gemini - Hate speech and content
+- `HARM_CATEGORY_SEXUALLY_EXPLICIT`: Gemini - Sexually explicit content
+- `HARM_CATEGORY_DANGEROUS_CONTENT`: Gemini - Dangerous content
+- `HARM_CATEGORY_CIVIC_INTEGRITY`: Gemini - Content that may be used to undermine civic integrity
+
+**HarmProbability Full Enum Values:**
+
+- `HARM_PROBABILITY_UNSPECIFIED`: Probability unspecified
+- `NEGLIGIBLE`: Negligible probability of content being unsafe
+- `LOW`: Low probability of content being unsafe
+- `MEDIUM`: Medium probability of content being unsafe
+- `HIGH`: High probability of content being unsafe
+
+**Modality Full Enum Values:**
+
+- `MODALITY_UNSPECIFIED`: Unspecified modality
+- `TEXT`: Plain text
+- `IMAGE`: Image
+- `VIDEO`: Video
+- `AUDIO`: Audio
+- `DOCUMENT`: Document, e.g., PDF
+
+**MediaResolution Full Enum Values:**
+
+- `MEDIA_RESOLUTION_UNSPECIFIED`: Media resolution not set
+- `MEDIA_RESOLUTION_LOW`: Media resolution set to low (64 tokens)
+- `MEDIA_RESOLUTION_MEDIUM`: Media resolution set to medium (256 tokens)
+- `MEDIA_RESOLUTION_HIGH`: Media resolution set to high (256 tokens for scaled reframing)
+
+**UrlRetrievalStatus Full Enum Values:**
+
+- `URL_RETRIEVAL_STATUS_UNSPECIFIED`: Default value, this value is not used
+- `URL_RETRIEVAL_STATUS_SUCCESS`: URL retrieval successful
+- `URL_RETRIEVAL_STATUS_ERROR`: URL retrieval failed due to an error
+
+## 🔍 Error Handling
+
+### Common Error Codes
+
+| Error Code | Description                        |
+| ---------- | ---------------------------------- |
+| `400`      | Malformed request or invalid parameters |
+| `401`      | Invalid or missing API key         |
+| `403`      | Insufficient permissions or quota limits |
+| `429`      | Too many requests                  |
+| `500`      | Internal server error              |
+
+### Detailed Error Code Descriptions
+
+| Error Code | Status                  | Description                               | Solution                                   |
+| ---------- | --------------------- | ----------------------------------------- | ------------------------------------------ |
+| `400`      | `INVALID_ARGUMENT`    | Invalid request parameters or malformed format | Check request parameter format and required fields |
+| `400`      | `FAILED_PRECONDITION` | Request precondition not met              | Ensure API call preconditions are met      |
+| `401`      | `UNAUTHENTICATED`     | Invalid, missing, or expired API key      | Check API key validity and format          |
+| `403`      | `PERMISSION_DENIED`   | Insufficient permissions or quota exhausted | Check API key permissions or upgrade quota |
+| `404`      | `NOT_FOUND`           | Specified model or resource does not exist | Verify model name and resource path        |
+| `413`      | `PAYLOAD_TOO_LARGE`   | Request body too large                    | Reduce input content size or process in batches |
+| `429`      | `RESOURCE_EXHAUSTED`  | Request frequency exceeded or insufficient quota | Reduce request frequency or wait for quota reset |
+| `500`      | `INTERNAL`            | Internal server error                     | Retry request, contact support if it persists |
+| `503`      | `UNAVAILABLE`         | Service temporarily unavailable           | Wait a moment and retry                    |
+| `504`      | `DEADLINE_EXCEEDED`   | Request timed out                         | Reduce input size or retry request         |
+
+### Error Response Example
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "Invalid argument: contents",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        "fieldViolations": [
+          {
+            "field": "contents",
+            "description": "contents is required"
+          }
+        ]
+      }
+    ]
+  }
+}
+```

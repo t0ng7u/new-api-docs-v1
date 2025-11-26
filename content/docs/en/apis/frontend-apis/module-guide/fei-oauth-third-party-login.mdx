@@ -1,0 +1,448 @@
+---
+title: OAuth Third-Party Login Module
+---
+
+<Callout type="info" title="Feature Description">
+The API prefix is uniformly http(s)://`<your-domain>`
+</Callout>
+
+    HTTPS should be used in production environments to secure authentication tokens. HTTP is only recommended for development environments.
+
+    Supports various OAuth login methods such as GitHub, OIDC, LinuxDO, WeChat, Telegram. Implements CSRF protection and session management, supports account binding and automatic registration. The frontend handles the OAuth flow via redirection.
+
+## 🔐 No Authentication Required
+
+### GitHub OAuth Redirection
+
+- **Interface Name**: GitHub OAuth Redirection
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/github`
+- **Authentication Requirement**: Public
+- **Feature Description**: Handles GitHub OAuth callbacks to complete user login or account binding
+
+💡 Request Example:
+
+```
+_// 前端通过重定向方式调用，通常由GitHub OAuth授权后自动回调  _window.location.href = `https://github.com/login/oauth/authorize?client_id=${github_client_id}&state=${state}&scope=user:email`;
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "user_access_token",
+    "user": {
+      "id": 1,
+      "username": "github_user",
+      "display_name": "GitHub User",
+      "email": "user@example.com"
+    }
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Admin has not enabled login and registration via GitHub"
+}
+```
+
+🧾 Field Description:
+
+- `code` (string): GitHub OAuth authorization code, provided by GitHub on callback
+- `state` (string): Anti-CSRF state code, must match the one stored in the session
+
+### OIDC Generic OAuth Redirection
+
+- **Interface Name**: OIDC Generic OAuth Redirection
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/oidc`
+- **Authentication Requirement**: Public
+- **Feature Description**: Handles OIDC OAuth callbacks, supports generic OpenID Connect protocol login
+
+💡 Request Example:
+
+```
+_// 前端通过重定向方式调用  _
+const url = new URL(auth_url);
+url.searchParams.set('client_id', client_id);
+url.searchParams.set('redirect_uri', `${window.location.origin}/oauth/oidc`);
+url.searchParams.set('response_type', 'code');
+url.searchParams.set('scope', 'openid profile email');
+url.searchParams.set('state', state);
+window.location.href = url.toString();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "user_access_token",
+    "user": {
+      "id": 1,
+      "username": "oidc_user",
+      "email": "user@example.com"
+    }
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to get OIDC user info! Please check settings!"
+}
+```
+
+🧾 Field Description:
+
+- `code` (string): OIDC authorization code
+- `state` (string): Anti-CSRF state code
+
+### LinuxDo OAuth Redirection
+
+- **Interface Name**: LinuxDo OAuth Redirection
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/linuxdo`
+- **Authentication Requirement**: Public
+- **Feature Description**: Handles LinuxDo OAuth callbacks, supports login via LinuxDo community accounts
+
+💡 Request Example:
+
+```
+_// 前端通过重定向方式调用  _
+window.location.href = `https://connect.linux.do/oauth2/authorize?response_type=code&client_id=${linuxdo_client_id}&state=${state}`;
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "user_access_token",
+    "user": {
+      "id": 1,
+      "username": "linuxdo_user",
+      "display_name": "LinuxDo User"
+    }
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Admin has disabled new user registration"
+}
+```
+
+🧾 Field Description:
+
+- `code` (string): LinuxDo OAuth authorization code
+- `state` (string): Anti-CSRF state code
+- `error` (string): Optional, OAuth error code
+- `error_description` (string): Optional, error description
+
+### WeChat QR Code Login Redirection
+
+- **Interface Name**: WeChat QR Code Login Redirection
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/wechat`
+- **Authentication Requirement**: Public
+- **Feature Description**: Handles WeChat QR code login, completes the login process via verification code
+
+💡 Request Example:
+
+```
+const response = await fetch(`/api/oauth/wechat?code=${wechat_verification_code}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "user_access_token",
+    "user": {
+      "id": 1,
+      "username": "wechat_user",
+      "wechat_id": "wechat_openid"
+    }
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Verification code invalid or expired"
+}
+```
+
+🧾 Field Description:
+
+`code` (string): Verification code obtained from WeChat QR scan
+
+### WeChat Account Binding
+
+- **Interface Name**: WeChat Account Binding
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/wechat/bind`
+- **Authentication Requirement**: Public
+- **Feature Description**: Binds a WeChat account to an existing user account
+
+💡 Request Example:
+
+```
+const response = await fetch(`/api/oauth/wechat/bind?code=${wechat_verification_code}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "WeChat account bound successfully!"
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Verification code invalid or this WeChat account is already bound"
+}
+```
+
+🧾 Field Description:
+
+`code` (string): Verification code obtained from WeChat QR scan
+
+### Email Binding
+
+- **Interface Name**: Email Binding
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/email/bind`
+- **Authentication Requirement**: Public
+- **Feature Description**: Binds an email to a user account via email verification code
+
+💡 Request Example:
+
+```
+const response = await fetch(`/api/oauth/email/bind?email=${email}&code=${email_verification_code}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "Email account bound successfully!"
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Verification code invalid or email already in use"
+}
+```
+
+🧾 Field Description:
+
+- `email` (string): Email address to bind
+- `code` (string): Email verification code
+
+### Telegram Login
+
+- **Interface Name**: Telegram Login
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/telegram/login`
+- **Authentication Requirement**: Public
+- **Feature Description**: Completes user login via Telegram Widget
+
+💡 Request Example:
+
+```
+const params = {
+  id: telegram_user_id,
+  first_name: "John",
+  last_name: "Doe",
+  username: "johndoe",
+  photo_url: "https://...",
+  auth_date: 1640995200,
+  hash: "telegram_hash"
+};
+const query = new URLSearchParams(params).toString();
+const response = await fetch(`/api/oauth/telegram/login?${query}`, {
+  method: 'GET'
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "user_access_token",
+    "user": {
+      "id": 1,
+      "username": "telegram_user",
+      "telegram_id": "123456789"
+    }
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Telegram verification failed"
+}
+```
+
+🧾 Field Description:
+
+- `id` (string): Telegram User ID
+- `first_name` (string): User's first name
+- `last_name` (string): User's last name, optional
+- `username` (string): Telegram username, optional
+- `photo_url` (string): Avatar URL, optional
+- `auth_date` (number): Authentication timestamp
+- `hash` (string): Telegram verification hash
+
+### Telegram Account Binding
+
+- **Interface Name**: Telegram Account Binding
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/telegram/bind`
+- **Authentication Requirement**: Public
+- **Feature Description**: Binds a Telegram account to an existing user account
+
+💡 Request Example:
+
+```
+// 通过TelegramLoginButton组件自动处理参数
+// 参数格式与Telegram登录相同
+const response = await fetch('/api/oauth/telegram/bind', {
+  method: 'GET',
+  params: telegram_auth_params
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "Telegram account bound successfully!"
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "This Telegram account is already bound"
+}
+```
+
+🧾 Field Description:
+
+Parameter format is the same as the Telegram login interface
+
+### Get Random State (Anti-CSRF)
+
+- **Interface Name**: Get Random State
+- **HTTP Method**: GET
+- **Path**: `/api/oauth/state`
+- **Authentication Requirement**: Public
+- **Feature Description**: Generates a random state parameter for CSRF protection in OAuth flows
+
+💡 Request Example:
+
+```
+let path = '/api/oauth/state';
+let affCode = localStorage.getItem('aff');
+if (affCode && affCode.length > 0) {
+  path += `?aff=${affCode}`;
+}
+const response = await fetch(path, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": "random_state_string_12chars"
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to generate state"
+}
+```
+
+🧾 Field Description:
+
+- `aff` (string): Optional, referral code parameter, used to record user source
+- `data` (string): Returned random state string, 12 characters long

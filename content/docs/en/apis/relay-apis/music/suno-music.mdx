@@ -1,0 +1,562 @@
+---
+title: Suno Music Format (Music)
+---
+
+<Callout type="info" title="Please Note">
+  This interface is **not an official Suno interface**, but a Suno proxy interface implemented based on author **Plato's** open-source project
+  [**Suno-API**](https://github.com/Suno-API/Suno-API).
+</Callout>
+
+    Many thanks to the author for their contribution, which allows us to conveniently use Suno's powerful features. If you have time, please give the author a Star.
+
+## 📝 Introduction
+
+The Suno Music API provides a range of music generation and processing capabilities, including:
+
+- Generate songs based on prompts (Inspiration Mode, Custom Mode)
+
+- Continue existing songs
+
+- Concatenate multiple audio segments
+
+- Generate lyrics
+
+- Upload audio
+
+The API allows you to easily integrate AI music generation capabilities into your applications.
+
+## 💡 Request Examples
+
+### Generate Song ✅
+
+```bash
+curl --location 'https://你的newapi服务器地址/suno/submit/music' \
+--header 'Authorization: Bearer $NEWAPI_API_KEY' \
+--header 'Content-Type: application/json' \
+--data '{
+    "prompt":"[Verse]\nWalking down the streets\nBeneath the city lights\nNeon signs flickering\nLighting up the night\nHeart beating faster\nLike a drum in my chest\nI'\''m alive in this moment\nFeeling so blessed\n\nStilettos on the pavement\nStepping with grace\nSurrounded by the people\nMoving at their own pace\nThe rhythm of the city\nIt pulses in my veins\nLost in the energy\nAs my worries drain\n\n[Verse 2]\nConcrete jungle shining\nWith its dazzling glow\nEvery corner hiding secrets that only locals know\nA symphony of chaos\nBut it'\''s music to my ears\nThe hustle and the bustle\nWiping away my fears",
+    "tags":"emotional punk",
+    "mv":"chirp-v4",
+    "title":"City Lights"
+}'
+```
+
+**Response Example:**
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": "736a6f88-bd29-4b1e-b110-37132a5325ac"
+}
+```
+
+### Generate Lyrics ✅
+
+```bash
+curl --location 'https://你的newapi服务器地址/suno/submit/lyrics' \
+--header 'Authorization: Bearer $NEWAPI_API_KEY' \
+--header 'Content-Type: application/json' \
+--data '{
+    "prompt":"dance"
+}'
+```
+
+**Response Example:**
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": "736a6f88-bd29-4b1e-b110-37132a5325ac"
+}
+```
+
+### Upload Audio ❌
+
+```bash
+curl --location 'https://你的newapi服务器地址/suno/uploads/audio-url' \
+--header 'Authorization: Bearer $NEWAPI_API_KEY' \
+--header 'Content-Type: application/json' \
+--data '{
+    "url":"http://cdnimg.example.com/ai/2024-06-18/d416d9c3c34eb22c7d8c094831d8dbd0.mp3"
+}'
+```
+
+**Response Example:**
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": "736a6f88-bd29-4b1e-b110-37132a5325ac"
+}
+```
+
+### Concatenate Songs ❌
+
+```bash
+curl --location 'https://你的newapi服务器地址/suno/submit/concat' \
+--header 'Authorization: Bearer $NEWAPI_API_KEY' \
+--header 'Content-Type: application/json' \
+--data '{
+    "clip_id":"Song ID after extend",
+    "is_infill": false
+}'
+```
+
+**Response Example:**
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": "736a6f88-bd29-4b1e-b110-37132a5325ac"
+}
+```
+
+### Query Task Status ✅
+
+#### Batch Query
+
+```bash
+curl --location 'https://你的newapi服务器地址/suno/fetch' \
+--header 'Authorization: Bearer $NEWAPI_API_KEY' \
+--header 'Content-Type: application/json' \
+--data '{
+    "ids":["task_id"],
+    "action":"MUSIC"
+}'
+```
+
+**Response Example:**
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": [
+    {
+      "task_id": "346c5d10-a4a1-4f49-a851-66a7dae6cfaf",
+      "notify_hook": "",
+      "action": "MUSIC",
+      "status": "IN_PROGRESS",
+      "fail_reason": "",
+      "submit_time": 1716191749,
+      "start_time": 1716191786,
+      "finish_time": 0,
+      "progress": "0%",
+      "data": [
+        {
+          "id": "e9893d04-6a63-4007-8473-64b706eca4d1",
+          "title": "Electric Dance Party",
+          "status": "streaming",
+          "metadata": {
+            "tags": "club banger high-energy edm",
+            "prompt": "Omitted",
+            "duration": null,
+            "error_type": null,
+            "error_message": null,
+            "audio_prompt_id": null,
+            "gpt_description_prompt": "miku dance"
+          },
+          "audio_url": "https://audiopipe.suno.ai/?item_id=e9893d04-6a63-4007-8473-64b706eca4d1",
+          "image_url": "https://cdn1.suno.ai/image_e9893d04-6a63-4007-8473-64b706eca4d1.png",
+          "video_url": "",
+          "model_name": "chirp-v3",
+          "image_large_url": "https://cdn1.suno.ai/image_large_e9893d04-6a63-4007-8473-64b706eca4d1.png",
+          "major_model_version": "v3"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Single Query
+
+```bash
+curl --location 'https://你的newapi服务器地址/suno/fetch/{{task_id}}' \
+--header 'Authorization: Bearer $NEWAPI_API_KEY'
+```
+
+**Response Example:**
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": {
+    "task_id": "f4a94d75-087b-4bb1-bd45-53ba293faf96",
+    "notify_hook": "",
+    "action": "LYRICS",
+    "status": "SUCCESS",
+    "fail_reason": "",
+    "submit_time": 1716192124,
+    "start_time": 1716192124,
+    "finish_time": 1716192124,
+    "progress": "100%",
+    "data": {
+      "id": "f4a94d75-087b-4bb1-bd45-53ba293faf96",
+      "text": "Omitted",
+      "title": "Electric Fantasy",
+      "status": "complete"
+    }
+  }
+}
+```
+
+## 📮 Requests
+
+All requests must include authentication information in the request header:
+
+```
+Authorization: Bearer $NEWAPI_API_KEY
+```
+
+### Endpoints
+
+#### Generate Song
+
+```
+POST /suno/submit/music
+```
+
+Generates new songs, supporting Inspiration Mode, Custom Mode, and continuation.
+
+#### Generate Lyrics
+
+```
+POST /suno/submit/lyrics
+```
+
+Generates lyrics based on a prompt.
+
+#### Upload Audio
+
+```
+POST /suno/uploads/audio-url
+```
+
+Uploads an audio file.
+
+#### Concatenate Songs
+
+```
+POST /suno/submit/concat
+```
+
+Concatenates multiple audio segments into a complete song.
+
+#### Batch Query Task Status
+
+```
+POST /suno/fetch
+```
+
+Batch retrieves the status and results of multiple tasks.
+
+#### Query Single Task Status
+
+```
+GET /suno/fetch/{{task_id}}
+```
+
+Queries the status and result of a single task.
+
+### Request Body Parameters
+
+#### Generate Song
+
+##### `prompt`
+
+- Type: String
+- Required: Not required for Inspiration Mode, required for Custom Mode
+- Description: Lyric content, required in Custom Mode
+
+##### `mv`
+
+- Type: String
+- Required: No
+- Description: Model version, optional values: chirp-v3-0, chirp-v3-5, defaults to chirp-v3-0
+
+##### `title`
+
+- Type: String
+- Required: Not required for Inspiration Mode, required for Custom Mode
+- Description: Song title, required in Custom Mode
+
+##### `tags`
+
+- Type: String
+- Required: Not required for Inspiration Mode, required for Custom Mode
+- Description: Song style tags, comma-separated, required in Custom Mode
+
+##### `make_instrumental`
+
+- Type: Boolean
+- Required: No
+- Description: Whether to generate instrumental music, true for instrumental music
+
+##### `task_id`
+
+- Type: String
+- Required: Required for continuation
+- Description: Task ID of the song to be continued
+
+##### `continue_at`
+
+- Type: Float
+- Required: Required for continuation
+- Description: The second from which to continue the song
+
+##### `continue_clip_id`
+
+- Type: String
+- Required: Required for continuation
+- Description: Clip ID of the song to be continued
+
+##### `gpt_description_prompt`
+
+- Type: String
+- Required: Required for Inspiration Mode, not required for other modes
+- Description: Text description of the inspiration source
+
+##### `notify_hook`
+
+- Type: String
+- Required: No
+- Description: Callback notification URL upon song generation completion
+
+#### Generate Lyrics
+
+##### `prompt`
+
+- Type: String
+- Required: Yes
+- Description: Theme or keywords for the lyrics
+
+##### `notify_hook`
+
+- Type: String
+- Required: No
+- Description: Callback notification URL upon lyric generation completion
+
+#### Upload Audio
+
+##### `url`
+
+- Type: String
+- Required: Yes
+- Description: URL address of the audio file to be uploaded
+
+#### Concatenate Songs
+
+##### `clip_id`
+
+- Type: String
+- Required: Yes
+- Description: ID of the song segment to be concatenated
+
+##### `is_infill`
+
+- Type: Boolean
+- Required: No
+- Description: Whether it is infill mode
+
+#### Task Query
+
+##### `ids`
+
+- Type: String[]
+- Required: Yes
+- Description: List of task IDs to query
+
+##### `action`
+
+- Type: String
+- Required: No
+- Description: Task type, optional values: MUSIC, LYRICS
+
+## 📥 Responses
+
+All interfaces return a unified JSON format response:
+
+```json
+{
+  "code": "success",
+  "message": "",
+  "data": "{{RESULT}}"
+}
+```
+
+### Success Response
+
+#### Basic Response Fields
+
+##### `code`
+
+- Type: String
+- Description: Request status, success indicates success
+
+##### `message`
+
+- Type: String
+- Description: Error message if the request fails
+
+##### `data`
+
+- Type: Varies by interface
+- Description: Returned data upon successful request
+  - Generate Song, Generate Lyrics, Upload Audio, Concatenate Songs interfaces: Returns a task ID string
+  - Task Query interface: Returns a task object or an array of task objects
+
+#### Task-Related Objects
+
+##### Task Object
+
+###### `task_id`
+
+- Type: String
+- Description: Task ID
+
+###### `notify_hook`
+
+- Type: String
+- Description: Callback notification URL after task completion
+
+###### `action`
+
+- Type: String
+- Description: Task type, optional values: MUSIC, LYRICS
+
+###### `status`
+
+- Type: String
+- Description: Task status, optional values: IN_PROGRESS, SUCCESS, FAIL
+
+###### `fail_reason`
+
+- Type: String
+- Description: Reason for task failure
+
+###### `submit_time`
+
+- Type: Integer
+- Description: Task submission timestamp
+
+###### `start_time`
+
+- Type: Integer
+- Description: Task start timestamp
+
+###### `finish_time`
+
+- Type: Integer
+- Description: Task finish timestamp
+
+###### `progress`
+
+- Type: String
+- Description: Task progress percentage
+
+###### `data`
+
+- Type: Varies by task type
+- Description:
+  - Music generation task: Array of song objects
+  - Lyric generation task: Lyric object
+
+##### Song Object
+
+###### `id`
+
+- Type: String
+- Description: Song ID
+
+###### `title`
+
+- Type: String
+- Description: Song title
+
+###### `status`
+
+- Type: String
+- Description: Song status
+
+###### `metadata`
+
+- Type: Object
+- Description: Song metadata
+  - tags: Song style tags
+  - prompt: Lyrics used to generate the song
+  - duration: Song duration
+  - error_type: Error type
+  - error_message: Error message
+  - audio_prompt_id: Audio prompt ID
+  - gpt_description_prompt: Description of inspiration source
+
+###### `audio_url`
+
+- Type: String
+- Description: URL address of the song audio
+
+###### `image_url`
+
+- Type: String
+- Description: URL address of the song cover image
+
+###### `video_url`
+
+- Type: String
+- Description: URL address of the song video
+
+###### `model_name`
+
+- Type: String
+- Description: Name of the model used to generate the song
+
+###### `major_model_version`
+
+- Type: String
+- Description: Major model version number
+
+##### Lyric Object
+
+###### `id`
+
+- Type: String
+- Description: Lyric ID
+
+###### `text`
+
+- Type: String
+- Description: Lyric content
+
+###### `title`
+
+- Type: String
+- Description: Lyric title
+
+###### `status`
+
+- Type: String
+- Description: Lyric status
+
+## 🌟 Best Practices
+
+1. Provide as detailed and specific song or lyric generation prompts as possible, avoiding overly general or abstract ones.
+
+2. When querying task status, a polling interval of 2-5 seconds is recommended to avoid excessive frequency.
+
+3. In Inspiration Mode, only the gpt_description_prompt parameter is required; the API will automatically generate lyrics, titles, tags, etc.
+
+4. Custom Mode requires prompt, title, and tags parameters, allowing for more control over the song.
+
+5. Try to use the latest model version (e.g., chirp-v4) for better results.
+
+6. Using the callback notification feature (notify_hook parameter) can reduce polling frequency and improve efficiency.
+
+7. Music continuation and concatenation features can generate richer and more complete works based on existing music.
+
+8. Pay attention to handling potential exceptions and errors, such as network timeouts, parameter validation failures, etc.

@@ -1,0 +1,1360 @@
+---
+title: User Module
+---
+
+<Callout type="info" title="Feature Description">
+The API prefix is uniformly http(s)://`<your-domain>`
+</Callout>
+
+    HTTPS should be used in production environments to ensure authentication tokens. HTTP is only recommended for development environments.
+
+    The core user management system implements a four-level permission system (Public/User/Admin/Root) and complete user lifecycle management. It includes features such as registration and login, personal profile, Token management, top-up and payment, and a referral system. It supports 2FA, email verification, and various OAuth login methods.
+
+## Account Registration/Login
+
+### 🔐 No Authentication Required
+
+#### Register New Account
+
+- **Interface Name**: Register New Account
+- **HTTP Method**: POST
+- **Path**: `/api/user/register`
+- **Authentication Required**: Public
+- **Function Description**: Creates a new user account, supporting email verification and referral code functionality
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/register', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    username: "newuser",
+    password: "password123",
+    email: "user@example.com",
+    verification_code: "123456",
+    aff_code: "INVITE123"
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "User registered successfully"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Admin has disabled new user registration"
+}
+```
+
+🧾 Field Description:
+
+- `username` (string): Username, required
+- `password` (string): Password, required
+- `email` (string): Email address, required when email verification is enabled
+- `verification_code` (string): Email verification code, required when email verification is enabled
+- `aff_code` (string): Referral code, optional
+
+#### User Login
+
+- **Interface Name**: User Login
+- **HTTP Method**: POST
+- **Path**: `/api/user/login`
+- **Authentication Required**: Public
+- **Function Description**: User account login, supports two-factor authentication (2FA)
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    username: "testuser",
+    password: "password123"
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example (without 2FA):
+
+```
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "user_access_token",
+    "user": {
+      "id": 1,
+      "username": "testuser",
+      "role": 1,
+      "quota": 1000000
+    }
+  }
+}
+```
+
+✅ Success Response Example (2FA required):
+
+```
+{
+  "success": true,
+  "message": "Please enter the two-factor authentication code",
+  "data": {
+    "require_2fa": true
+  }
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Admin has disabled password login"
+}
+```
+
+🧾 Field Description:
+
+- `username` (string): Username, required
+- `password` (string): Password, required
+- `require_2fa` (boolean): Whether two-factor authentication is required
+
+#### Epay Payment Callback
+
+- **Interface Name**: Epay Payment Callback
+- **HTTP Method**: GET
+- **Path**: `/api/user/epay/notify`
+- **Authentication Required**: Public
+- **Function Description**: Handles payment callback notifications from the Epay system
+
+💡 Request Example:
+
+```
+// Usually called back automatically by the payment system, no active call from the frontend is needed
+// Example URL: /api/user/epay/notify?trade_no=USR1NO123456&money=10.00&trade_status=TRADE_SUCCESS
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "Payment successful"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Order does not exist or has been processed"
+}
+```
+
+🧾 Field Description:
+
+- `trade_no` (string): Transaction order number
+- `money` (string): Payment amount
+- `trade_status` (string): Transaction status
+- `sign` (string): Signature verification
+
+#### List All Groups (No Auth Version)
+
+- **Interface Name**: List All Groups
+- **HTTP Method**: GET
+- **Path**: `/api/user/groups`
+- **Authentication Required**: Public
+- **Function Description**: Retrieves information for all user groups in the system, accessible without login
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/groups', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "default": {
+      "ratio": 1.0,
+      "desc": "Default Group"
+    },
+    "vip": {
+      "ratio": 0.8,
+      "desc": "VIP Group"
+    },
+    "auto": {
+      "ratio": "自动",
+      "desc": "Automatically select optimal group"
+    }
+  }
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to retrieve group information"
+}
+```
+
+🧾 Field Description:
+
+- `data` (object): Group information mapping
+  - `Key` (string): Group name
+  - `ratio` (number/string): Group ratio, "自动" (auto) means automatic selection
+  - `desc` (string): Group description
+
+### 🔐 User Authentication
+
+#### Logout
+
+- **Interface Name**: Logout
+- **HTTP Method**: GET
+- **Path**: `/api/user/logout`
+- **Authentication Required**: User
+- **Function Description**: Clears user session, logs out
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/logout', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to clear session"
+}
+```
+
+🧾 Field Description:
+
+No request parameters
+
+## User Self-Operations
+
+### 🔐 User Authentication
+
+#### Get Own Group
+
+- **Interface Name**: Get Own Group
+- **HTTP Method**: GET
+- **Path**: `/api/user/self/groups`
+- **Authentication Required**: User
+- **Function Description**: Retrieves group information available to the current logged-in user, including group ratio and description
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/self/groups', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "default": {
+      "ratio": 1.0,
+      "desc": "Default Group"
+    },
+    "vip": {
+      "ratio": 0.8,
+      "desc": "VIP Group"
+    },
+    "auto": {
+      "ratio": "自动",
+      "desc": "Automatically select optimal group"
+    }
+  }
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to retrieve group information"
+}
+```
+
+🧾 Field Description:
+
+- `data` (object): User available group information mapping group.go: 25-48
+  - `Key` (string): Group name
+  - `ratio` (number/string): Group ratio, "自动" (auto) means automatically select optimal group
+  - `desc` (string): Group description
+
+#### Get Personal Profile
+
+- **Interface Name**: Get Personal Profile
+- **HTTP Method**: GET
+- **Path**: `/api/user/self`
+- **Authentication Required**: User
+- **Function Description**: Retrieves detailed information for the current user, including permissions, quota, settings, etc.
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/self', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 1,
+    "username": "testuser",
+    "display_name": "Test User",
+    "role": 1,
+    "status": 1,
+    "email": "user@example.com",
+    "group": "default",
+    "quota": 1000000,
+    "used_quota": 50000,
+    "request_count": 100,
+    "aff_code": "ABC123",
+    "aff_count": 5,
+    "aff_quota": 10000,
+    "aff_history_quota": 50000,
+    "inviter_id": 0,
+    "linux_do_id": "",
+    "setting": "{}",
+    "stripe_customer": "",
+    "sidebar_modules": "{\"chat\":{\"enabled\":true}}",
+    "permissions": {
+      "can_view_logs": true,
+      "can_manage_tokens": true
+    }
+  }
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to retrieve user information"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): User ID
+- `username` (string): Username
+- `display_name` (string): Display name
+- `role` (number): User role, 1=Normal user, 10=Admin, 100=Root user
+- `status` (number): User status, 1=Normal, 2=Disabled
+- `email` (string): Email address
+- `group` (string): Group
+- `quota` (number): Total quota
+- `used_quota` (number): Used quota
+- `request_count` (number): Request count
+- `aff_code` (string): Referral code
+- `aff_count` (number): Number of referrals
+- `aff_quota` (number): Referral bonus quota
+- `aff_history_quota` (number): Historical referral quota
+- `inviter_id` (number): Inviter ID
+- `linux_do_id` (string): LinuxDo account ID
+- `setting` (string): User settings JSON string
+- `stripe_customer` (string): Stripe customer ID
+- `sidebar_modules` (string): Sidebar module configuration JSON string
+- `permissions` (object): User permission information
+
+#### Get Model Visibility
+
+- **Interface Name**: Get Model Visibility
+- **HTTP Method**: GET
+- **Path**: `/api/user/models`
+- **Authentication Required**: User
+- **Function Description**: Retrieves the list of AI models accessible to the current user
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/models', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": [
+    "gpt-3.5-turbo",
+    "gpt-4",
+    "claude-3-sonnet",
+    "claude-3-haiku"
+  ]
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to retrieve model list"
+}
+```
+
+🧾 Field Description:
+
+- `data` (array): List of model names accessible to the user
+
+#### Modify Personal Profile
+
+- **Interface Name**: Modify Personal Profile
+- **HTTP Method**: PUT
+- **Path**: `/api/user/self`
+- **Authentication Required**: User
+- **Function Description**: Updates user personal information or sidebar settings
+
+💡 Request Example (Update Personal Information):
+
+```
+const response = await fetch('/api/user/self', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    display_name: "New Display Name",
+    email: "newemail@example.com"
+  })
+});
+const data = await response.json();
+```
+
+💡 Request Example (Update Sidebar Settings):
+
+```
+const response = await fetch('/api/user/self', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    sidebar_modules: JSON.stringify({
+      chat: { enabled: true, playground: true },
+      console: { enabled: true, token: true }
+    })
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "Update successful"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Invalid input"
+}
+```
+
+🧾 Field Description:
+
+- `display_name` (string): Display name, optional
+- `email` (string): Email address, optional
+- `password` (string): New password, optional
+- `sidebar_modules` (string): Sidebar module configuration JSON string, optional
+
+#### Deactivate Account
+
+- **Interface Name**: Deactivate Account
+- **HTTP Method**: DELETE
+- **Path**: `/api/user/self`
+- **Authentication Required**: User
+- **Function Description**: Deletes the current user account; Root users cannot be deleted
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/self', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Cannot delete super admin account"
+}
+```
+
+🧾 Field Description:
+
+No request parameters
+
+#### Generate User-level Access Token
+
+- **Interface Name**: Generate User-level Access Token
+- **HTTP Method**: GET
+- **Path**: `/api/user/token`
+- **Authentication Required**: User
+- **Function Description**: Generates a new access token for the current user, used for API calls
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/token', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": "`<YOUR_API_KEY>`"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to generate token"
+}
+```
+
+🧾 Field Description:
+
+- `data` (string): Generated access token
+
+#### Get Referral Code Information
+
+- **Interface Name**: Get Referral Code Information
+- **HTTP Method**: GET
+- **Path**: `/api/user/aff`
+- **Authentication Required**: User
+- **Function Description**: Retrieves or generates the user's referral code, used to invite new users to register
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/aff', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": "ABC123"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to retrieve referral code"
+}
+```
+
+🧾 Field Description:
+
+- `data` (string): User's referral code; if it doesn't exist, a 4-digit random string will be automatically generated
+
+#### Direct Balance Top-up
+
+- **Interface Name**: Direct Balance Top-up
+- **HTTP Method**: POST
+- **Path**: `/api/user/topup`
+- **Authentication Required**: User
+- **Function Description**: Top up account quota using a redemption code
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/topup', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    key: "REDEEM123456"
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "Redeemed successfully",
+  "data": 100000
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Redemption code invalid or already used"
+}
+```
+
+🧾 Field Description:
+
+- `key` (string): Redemption code, required
+- `data` (number): Returns the amount of quota redeemed upon success
+
+#### Submit Payment Order
+
+- **Interface Name**: Submit Payment Order
+- **HTTP Method**: POST
+- **Path**: `/api/user/pay`
+- **Authentication Required**: User
+- **Function Description**: Creates an online payment order, supporting multiple payment methods
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/pay', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    amount: 10000,
+    payment_method: "alipay",
+    top_up_code: ""
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "success",
+  "data": {
+    "pid": "12345",
+    "type": "alipay",
+    "out_trade_no": "USR1NO123456",
+    "notify_url": "https://example.com/notify",
+    "return_url": "https://example.com/return",
+    "name": "TUC10000",
+    "money": "10.00",
+    "sign": "abc123def456"
+  },
+  "url": "https://pay.example.com/submit"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Top-up amount cannot be less than 1000"
+}
+```
+
+🧾 Field Description:
+
+- `amount` (number): Top-up amount, must be greater than or equal to the minimum top-up quota topup.go: 133-136
+- `payment_method` (string): Payment method, e.g., "alipay", "wxpay"
+- `top_up_code` (string): Top-up code, optional
+- `data` (object): Payment form parameters
+- `url` (string): Payment submission URL
+
+#### Balance Payment
+
+- **Interface Name**: Balance Payment
+- **HTTP Method**: POST
+- **Path**: `/api/user/amount`
+- **Authentication Required**: User
+- **Function Description**: Calculates the actual payment amount corresponding to the specified top-up quantity
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/amount', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    amount: 10000,
+    top_up_code: ""
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "success",
+  "data": "10.00"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Top-up amount cannot be less than 1000"
+}
+```
+
+🧾 Field Description:
+
+- `amount` (number): Top-up amount, must be greater than or equal to the minimum top-up quota
+- `top_up_code` (string): Top-up code, optional
+- `data` (string): Actual amount to be paid (in Yuan)
+
+#### Referral Quota Transfer
+
+- **Interface Name**: Referral Quota Transfer
+- **HTTP Method**: POST
+- **Path**: `/api/user/aff_transfer`
+- **Authentication Required**: User
+- **Function Description**: Converts referral bonus quota into available quota
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/aff_transfer', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    quota: 50000
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "Transfer successful"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Insufficient referral quota!"
+}
+```
+
+🧾 Field Description:
+
+- `quota` (number): Amount of quota to convert, must be greater than or equal to the minimum unit quota
+
+#### Update User Settings
+
+- **Interface Name**: Update User Settings
+- **HTTP Method**: PUT
+- **Path**: `/api/user/setting`
+- **Authentication Required**: User
+- **Function Description**: Updates the user's personal settings configuration
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/setting', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    theme: "dark",
+    language: "zh-CN",
+    notifications: {
+      email: true,
+      browser: false
+    }
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "Settings updated successfully"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Settings format error"
+}
+```
+
+🧾 Field Description:
+
+- The request body can contain any user setting fields, submitted in JSON format
+- Specific fields depend on the requirements of the frontend settings page
+
+## Admin User Management
+
+### 🔐 Admin Authentication
+
+#### Get All User List
+
+- **Interface Name**: Get All User List
+- **HTTP Method**: GET
+- **Path**: `/api/user/`
+- **Authentication Required**: Admin
+- **Function Description**: Retrieves paginated list information for all users in the system
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/?p=1&page_size=20', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "username": "testuser",
+        "display_name": "Test User",
+        "role": 1,
+        "status": 1,
+        "email": "user@example.com",
+        "group": "default",
+        "quota": 1000000,
+        "used_quota": 50000,
+        "request_count": 100
+      }
+    ],
+    "total": 50,
+    "page": 1,
+    "page_size": 20
+  }
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to retrieve user list"
+}
+```
+
+🧾 Field Description:
+
+- `p` (number): Page number, defaults to 1
+- `page_size` (number): Items per page, defaults to 20
+- `items` (array): List of user information
+- `total` (number): Total number of users
+- `page` (number): Current page number
+- `page_size` (number): Items per page
+
+#### Search Users
+
+- **Interface Name**: Search Users
+- **HTTP Method**: GET
+- **Path**: `/api/user/search`
+- **Authentication Required**: Admin
+- **Function Description**: Searches for users by keyword and group
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/search?keyword=test&group=default&p=1&page_size=20', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "username": "testuser",
+        "display_name": "Test User",
+        "role": 1,
+        "status": 1,
+        "email": "test@example.com",
+        "group": "default"
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 20
+  }
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to search users"
+}
+```
+
+🧾 Field Description:
+
+- `keyword` (string): Search keyword, can match username, display name, email
+- `group` (string): User group filter condition
+- `p` (number): Page number, defaults to 1
+- `page_size` (number): Items per page, defaults to 20
+
+#### Get Single User Information
+
+- **Interface Name**: Get Single User Information
+- **HTTP Method**: GET
+- **Path**: `/api/user/:id`
+- **Authentication Required**: Admin
+- **Function Description**: Retrieves detailed information for a specified user, including permission checks
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/123', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 123,
+    "username": "targetuser",
+    "display_name": "Target User",
+    "role": 1,
+    "status": 1,
+    "email": "target@example.com",
+    "group": "default",
+    "quota": 1000000,
+    "used_quota": 50000,
+    "request_count": 100,
+    "aff_code": "ABC123",
+    "aff_count": 5
+  }
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "No permission to retrieve information for users of the same or higher role"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): User ID, passed via URL path
+- Returns complete user information, but administrators cannot view information for users of the same or higher role
+
+#### Create User
+
+- **Interface Name**: Create User
+- **HTTP Method**: POST
+- **Path**: `/api/user/`
+- **Authentication Required**: Admin
+- **Function Description**: Creates a new user account; administrators cannot create users with a role greater than or equal to their own
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    username: "newuser",
+    password: "password123",
+    display_name: "New User",
+    role: 1
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Cannot create users with a role greater than or equal to your own"
+}
+```
+
+🧾 Field Description:
+
+- `username` (string): Username, required
+- `password` (string): Password, required
+- `display_name` (string): Display name, optional, defaults to username
+- `role` (number): User role, must be less than the current administrator's role
+
+#### Management Operations (e.g., Freeze/Reset)
+
+- **Interface Name**: Management Operations (e.g., Freeze/Reset)
+- **HTTP Method**: POST
+- **Path**: `/api/user/manage`
+- **Authentication Required**: Admin
+- **Function Description**: Performs management operations on users, including enable, disable, delete, promote, demote, etc.
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/manage', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    id: 123,
+    action: "disable"
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Cannot disable super admin user"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): Target user ID, required
+- `action` (string): Operation type, required, possible values:
+  - `disable`: Disable user
+  - `enable`: Enable user
+  - `delete`: Delete user
+  - `promote`: Promote to administrator (Root users only)
+  - `demote`: Demote to normal user
+
+#### Update User
+
+- **Interface Name**: Update User
+- **HTTP Method**: PUT
+- **Path**: `/api/user/`
+- **Authentication Required**: Admin
+- **Function Description**: Updates user information, including permission checks and quota change records
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    id: 123,
+    username: "updateduser",
+    display_name: "Updated User",
+    email: "updated@example.com",
+    quota: 2000000,
+    role: 1,
+    status: 1
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "No permission to update information for users of the same or higher role"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): User ID, required
+- `username` (string): Username, optional
+- `display_name` (string): Display name, optional
+- `email` (string): Email address, optional
+- `password` (string): New password, optional; if empty, password will not be updated
+- `quota` (number): User quota, optional
+- `role` (number): User role, cannot be greater than or equal to the current administrator's role
+- `status` (number): User status, optional
+
+#### Delete User
+
+- **Interface Name**: Delete User
+- **HTTP Method**: DELETE
+- **Path**: `/api/user/:id`
+- **Authentication Required**: Admin
+- **Function Description**: Hard deletes a specified user; administrators cannot delete users of the same or higher role
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/123', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "No permission to delete users of the same or higher role"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): User ID, passed via URL path
+- Performs a hard delete operation, irreversible

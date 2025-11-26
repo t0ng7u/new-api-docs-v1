@@ -1,0 +1,58 @@
+```
+---
+title: 利用可能なモデルリストの取得（Model）
+---
+
+<Callout type="info" title="説明">
+インターフェースのプレフィックスは http(s)://`<your-domain>` に統一されています
+</Callout>
+
+    本番環境では認証トークンを保護するためにHTTPSを使用する必要があります。HTTPは開発環境でのみ推奨されます。
+
+- **インターフェース名**：フロントエンドで利用可能なモデルリストの取得
+- **HTTP メソッド**：GET
+- **パス**：`/api/models`
+- **認証要件**：ユーザー
+- **機能概要**：現在のユーザーがアクセス可能なAIモデルリストを取得し、フロントエンドのダッシュボード表示に使用します
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/models', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_user_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "data": {
+    "1": ["gpt-3.5-turbo", "gpt-4"],
+    "2": ["claude-3-sonnet", "claude-3-haiku"]
+  }
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "未授权访问"
+}
+```
+
+🧾 フィールド説明：
+
+- `data` （オブジェクト）: チャンネルIDからモデルリストへのマッピング
+  - キー （文字列）: チャンネルID
+  - 値 （配列）: そのチャンネルがサポートするモデル名のリスト
+```

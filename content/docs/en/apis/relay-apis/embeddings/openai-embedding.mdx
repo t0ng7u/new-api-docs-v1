@@ -1,0 +1,248 @@
+---
+title: OpenAI Embeddings
+---
+
+<Callout type="info" title="Official Documentation">
+  [OpenAI Embeddings](https://platform.openai.com/docs/api-reference/embeddings)
+</Callout>
+
+## 📝 Introduction
+
+Obtain vector representations of given input text, which can be easily used by machine learning models and algorithms. For related guidance, please refer to the [Embeddings Guide](https://platform.openai.com/docs/guides/embeddings).
+
+It is important to note:
+
+- Some models may have a limit on the total number of input tokens.
+
+- You can use the [example Python code](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb) to count token quantities.
+
+- For example: The output vector dimension for the text-embedding-ada-002 model is 1536.
+
+## 💡 Request Examples
+
+### Create Text Embedding ✅
+
+```bash
+curl https://你的newapi服务器地址/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -d '{
+    "input": "The food was delicious and the waiter...",
+    "model": "text-embedding-ada-002",
+    "encoding_format": "float"
+  }'
+```
+
+**Response Example:**
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "embedding": [
+        0.0023064255, -0.009327292,
+        // ... (1536 floats for ada-002)
+        -0.0028842222
+      ],
+      "index": 0
+    }
+  ],
+  "model": "text-embedding-ada-002",
+  "usage": {
+    "prompt_tokens": 8,
+    "total_tokens": 8
+  }
+}
+```
+
+### Batch Create Embeddings ✅
+
+```bash
+curl https://你的newapi服务器地址/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -d '{
+    "input": ["The food was delicious", "The waiter was friendly"],
+    "model": "text-embedding-ada-002",
+    "encoding_format": "float"
+  }'
+```
+
+**Response Example:**
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "embedding": [
+        0.0023064255
+        // ... (1536 floats)
+      ],
+      "index": 0
+    },
+    {
+      "object": "embedding",
+      "embedding": [
+        -0.008815289
+        // ... (1536 floats)
+      ],
+      "index": 1
+    }
+  ],
+  "model": "text-embedding-ada-002",
+  "usage": {
+    "prompt_tokens": 12,
+    "total_tokens": 12
+  }
+}
+```
+
+## 📮 Request
+
+### Endpoint
+
+```
+POST /v1/embeddings
+```
+
+Creates an embedding vector representing the input text.
+
+### Authentication Method
+
+Include the following in the request header for API key authentication:
+
+```
+Authorization: Bearer $NEWAPI_API_KEY
+```
+
+Where `$OPENAI_API_KEY` is your API key.
+
+### Request Body Parameters
+
+#### `input`
+
+- Type: string or array
+- Required: Yes
+
+The input text to embed, encoded as a string or array of tokens. To embed multiple inputs in a single request, pass an array of strings or array of token arrays. The input must not exceed the model's maximum input tokens (8192 tokens for text-embedding-ada-002), cannot be an empty string, and any array's dimension must be less than or equal to 2048.
+
+#### `model`
+
+- Type: string
+- Required: Yes
+
+ID of the model to use. You can use the List models API to see all available models, or see the model overview for descriptions.
+
+#### `encoding_format`
+
+- Type: string
+- Required: No
+- Default: float
+
+The format to return the embeddings in. Can be float or base64.
+
+#### `dimensions`
+
+- Type: integer
+- Required: No
+
+The number of dimensions the generated output embeddings should have. Only supported in text-embedding-3 and newer models.
+
+#### `user`
+
+- Type: string
+- Required: No
+
+A unique identifier representing your end-user, which can help OpenAI monitor and detect abuse. [Learn more](https://platform.openai.com/docs/guides/safety-best-practices/end-user-ids).
+
+## 📥 Response
+
+### Successful Response
+
+Returns a list of embedding objects.
+
+#### `object`
+
+- Type: string
+- Description: The type of the object, which is "list"
+
+#### `data`
+
+- Type: array
+- Description: An array of embedding objects
+- Properties:
+  - `object`: The type of the object, which is "embedding"
+  - `embedding`: The embedding vector, a list of floats. The length of the vector depends on the model.
+  - `index`: The index of the embedding in the list.
+
+#### `model`
+
+- Type: string
+- Description: The name of the model used.
+
+#### `usage`
+
+- Type: object
+- Description: Token usage statistics.
+- Properties:
+  - `prompt_tokens`: The number of tokens used by the prompt.
+  - `total_tokens`: The total number of tokens.
+
+### Embedding Object
+
+Represents an embedding vector returned by the embeddings endpoint.
+
+```json
+{
+  "object": "embedding",
+  "embedding": [
+    0.0023064255, -0.009327292,
+    // ... (1536 floats in total for ada-002)
+    -0.0028842222
+  ],
+  "index": 0
+}
+```
+
+#### `index`
+
+- Type: integer
+- Description: The index of the embedding in the list.
+
+#### `embedding`
+
+- Type: array
+- Description: The embedding vector, a list of floats. The length of the vector depends on the model; refer to the embeddings guide for details.
+
+#### `object`
+
+- Type: string
+- Description: The type of the object, always "embedding".
+
+### Error Response
+
+When an issue occurs with a request, the API will return an error response object with an HTTP status code in the 4XX-5XX range.
+
+#### Common Error Status Codes
+
+- `401 Unauthorized`: Invalid or missing API key.
+- `400 Bad Request`: Invalid request parameters, e.g., empty input or exceeding token limit.
+- `429 Too Many Requests`: API call limit exceeded.
+- `500 Internal Server Error`: Internal server error.
+
+**Error Response Example:**
+
+```json
+{
+  "error": {
+    "message": "The input exceeds the maximum length. Please reduce the length of your input.",
+    "type": "invalid_request_error",
+    "param": "input",
+    "code": "context_length_exceeded"
+  }
+}
+```

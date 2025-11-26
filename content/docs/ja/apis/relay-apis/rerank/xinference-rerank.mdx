@@ -1,0 +1,39 @@
+```
+---
+title: Xinference リランキング形式（Rerank）
+---
+
+<Callout type="warn" title="重要なお知らせ">
+  New APIでは、Xinferenceのリランキング応答構造はJinaのリランキング応答構造としてフォーマットされ、Jinaのリランキングと同じ方法で使用されます。**Difyなどのクライアントユーザーの場合**：設定時にプロバイダータイプとしてXinferenceではなく**Jina AI**を選択し、Xinferenceがサポートするモデル名を使用してください。
+</Callout>
+
+## 📝 はじめに
+
+XinferenceのリランキングAPIは、Jina AIのリランキングAPIと完全に互換性があります。詳細な使用方法、リクエストパラメータ、および応答形式については、[Jina AI リランキング形式（Rerank）](jinaai-rerank.md)ドキュメントを参照してください。
+
+## 💡 使用方法
+
+XinferenceのリランキングAPIを使用する際は、`model`パラメータをXinferenceがサポートするリランキングモデルに設定するだけでよく、その他のパラメータと使用方法はJina AIのリランキングAPIと同じです。
+
+### リクエスト例
+
+```bash
+curl https://あなたのnewapiサーバーアドレス/v1/rerank \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "jina-reranker-v2",
+    "query": "アメリカの首都はどこですか？",
+    "documents": [
+      "ネバダ州の州都はカーソンシティです。",
+      "北マリアナ諸島は太平洋上の一連の島々で、その首都はサイパンです。",
+      "ワシントンD.C.（ワシントンまたはD.C.とも呼ばれ、正式名称はコロンビア特別区）はアメリカ合衆国の首都です。",
+      "英語の文法における大文字化とは、単語の先頭に大文字を使用することです。英語の用法は他の言語の大文字化とは異なります。",
+      "アメリカが国となる前から死刑は存在していました。2017年現在、50州のうち30州で死刑が合法です。"
+    ],
+    "top_n": 3
+  }'
+```
+
+詳細については、[Jina AI リランキング形式（Rerank）](jinaai-rerank.md)ドキュメントを参照してください。
+```

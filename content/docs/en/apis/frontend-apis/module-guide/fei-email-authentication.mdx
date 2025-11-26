@@ -1,0 +1,148 @@
+---
+title: Email Authentication Module
+---
+
+<Callout type="info" title="Feature Description">
+The API prefix is uniformly http(s)://`<your-domain>`
+</Callout>
+
+    HTTPS should be used in production environments to secure authentication tokens. HTTP is only recommended for development environments.
+
+    Implements email verification and password reset functionalities, integrating rate limiting and Turnstile protection. Supports automatic generation of random passwords and email template customization. Widely used in scenarios such as user registration and account binding.
+
+## 🔐 No Authentication Required
+
+### Send Email Verification Mail
+
+- **Interface Name**: Send Email Verification Mail
+- **HTTP Method**: GET
+- **Path**: `/api/verification`
+- **Authentication Requirement**: Public (Rate-limited)
+- **Function Description**: Sends an email verification code to the specified email address, used for email binding or verification operations.
+
+💡 Request Example:
+
+```
+const response = await fetch(`/api/verification?email=${email}&turnstile=${turnstileToken}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Invalid parameters"
+}
+```
+
+🧾 Field Description:
+
+- `email` (string): The email address to receive the verification code, must be a valid email format.
+- `turnstile` (string): Turnstile verification token, used to prevent bot attacks.
+
+### Send Password Reset Mail
+
+- **Interface Name**: Send Password Reset Mail
+- **HTTP Method**: GET
+- **Path**: `/api/reset_password`
+- **Authentication Requirement**: Public (Rate-limited)
+- **Function Description**: Sends a password reset link to a registered email address, used for users to recover their password.
+
+💡 Request Example:
+
+```
+const response = await fetch(`/api/reset_password?email=${email}&turnstile=${turnstileToken}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "This email address is not registered"
+}
+```
+
+🧾 Field Description:
+
+- `email` (string): The email address for which to reset the password, must be a registered email.
+- `turnstile` (string): Turnstile verification token, used to prevent malicious requests.
+
+### Submit Password Reset Request
+
+- **Interface Name**: Submit Password Reset Request
+- **HTTP Method**: POST
+- **Path**: `/api/user/reset`
+- **Authentication Requirement**: Public
+- **Function Description**: Completes password reset via the reset link in the email; the system will generate and return a new password.
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/user/reset', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: "user@example.com",
+    token: "verification_token_from_email"
+  })
+});
+const data = await response.json();
+```
+
+✅ Success Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": "newPassword123"
+}
+```
+
+❗ Failure Response Example:
+
+```
+{
+  "success": false,
+  "message": "Reset link is invalid or expired"
+}
+```
+
+🧾 Field Description:
+
+- `email` (string): The email address for which to reset the password.
+- `token` (string): The verification token obtained from the reset email.
+- `data` (string): The new password returned upon success; the system automatically generates a 12-character random password.

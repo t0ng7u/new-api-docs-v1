@@ -1,0 +1,37 @@
+---
+title: Xinference Rerank Format
+---
+
+<Callout type="warn" title="Important Note">
+  In New API, Xinference's rerank response structure will be formatted as Jina's rerank response structure, and its usage will be the same as Jina's rerank. **For client users like Dify**: When configuring, please select **Jina AI** as the provider type instead of Xinference, and use Xinference-supported model names.
+</Callout>
+
+## 📝 Introduction
+
+Xinference's rerank API is fully compatible with Jina AI's rerank API. Please refer to the [Jina AI Rerank Format](jinaai-rerank.md) documentation for detailed usage, request parameters, and response format.
+
+## 💡 Usage
+
+When using the Xinference rerank API, simply set the `model` parameter to a Xinference-supported rerank model; the remaining parameters and usage are the same as the Jina AI rerank API.
+
+### Example Request
+
+```bash
+curl https://your-newapi-server-address/v1/rerank \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "jina-reranker-v2",
+    "query": "What is the capital of the United States?",
+    "documents": [
+      "The capital of Nevada is Carson City.",
+      "The Northern Mariana Islands are a group of islands in the Pacific Ocean, and their capital is Saipan.",
+      "Washington, D.C. (also known as Washington or D.C., officially the District of Columbia) is the capital of the United States.",
+      "Capitalization in English grammar is the use of capital letters at the beginning of words. English usage differs from capitalization in other languages.",
+      "Capital punishment has existed in the United States since before it became a country. As of 2017, capital punishment is legal in 30 of the 50 states."
+    ],
+    "top_n": 3
+  }'
+```
+
+For more details, please refer to the [Jina AI Rerank Format](jinaai-rerank.md) documentation.

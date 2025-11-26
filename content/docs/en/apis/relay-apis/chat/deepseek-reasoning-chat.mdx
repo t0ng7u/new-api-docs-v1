@@ -1,0 +1,285 @@
+---
+title: Deepseek reasoning Conversation Format (Reasoning Content)
+---
+
+<Callout type="info" title="Official Documentation">
+  [Reasoning Model
+  (deepseek-reasoner)](https://api-docs.deepseek.com/zh-cn/guides/reasoning_model)
+</Callout>
+
+## 📝 Introduction
+
+Deepseek-reasoner is a reasoning model launched by DeepSeek. Before outputting the final answer, the model first outputs chain-of-thought content to improve the accuracy of the final answer. The API exposes the deepseek-reasoner chain-of-thought content to users for viewing, display, and distillation.
+
+## 💡 Request Example
+
+### Basic Text Conversation ✅
+
+```bash
+curl https://api.deepseek.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -d '{
+    "model": "deepseek-reasoner",
+    "messages": [
+      {
+        "role": "user",
+        "content": "9.11 and 9.8, which is greater?"
+      }
+    ],
+    "max_tokens": 4096
+  }'
+```
+
+**Response Example:**
+
+```json
+{
+  "id": "chatcmpl-123",
+  "object": "chat.completion",
+  "created": 1677652288,
+  "model": "deepseek-reasoner",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "reasoning_content": "Let me think step by step:\n1. We need to compare the sizes of 9.11 and 9.8\n2. Both numbers are decimals, we can compare them directly\n3. 9.8 = 9.80\n4. 9.11 `< 9.80\n5. So 9.8 is greater",
+        "content": "9.8 is greater than 9.11."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10,
+    "completion_tokens": 15,
+    "total_tokens": 25
+  }
+}
+```
+
+### Streaming Response ✅
+
+```bash
+curl https://api.deepseek.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -d '{
+    "model": "deepseek-reasoner",
+    "messages": [
+      {
+        "role": "user",
+        "content": "9.11 and 9.8, which is greater?"
+      }
+    ],
+    "stream": true
+  }'
+```
+
+**Streaming Response Example:**
+
+```jsonl
+{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"deepseek-reasoner","choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"Let me"},"finish_reason":null}]}
+
+{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"deepseek-reasoner","choices":[{"index":0,"delta":{"reasoning_content":"step by step"},"finish_reason":null}]}
+
+{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"deepseek-reasoner","choices":[{"index":0,"delta":{"reasoning_content":"think:"},"finish_reason":null}]}
+
+// ... More chain-of-thought content ...
+
+{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"deepseek-reasoner","choices":[{"index":0,"delta":{"content":"9.8"},"finish_reason":null}]}
+
+{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"deepseek-reasoner","choices":[{"index":0,"delta":{"content":" is greater"},"finish_reason":null}]}
+
+// ... More final answer content ...
+
+{"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"deepseek-reasoner","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+```
+
+## 📮 Request
+
+### Endpoint
+
+```
+POST /v1/chat/completions
+```
+
+### Authentication Method
+
+Include the following in the request header for API key authentication:
+
+```
+Authorization: Bearer $NEWAPI_API_KEY
+```
+
+Where `$NEWAPI_API_KEY` is your API key.
+
+### Request Body Parameters
+
+#### `messages`
+
+- Type: Array
+- Required: Yes
+
+A list of messages comprising the conversation so far. Please note that if you pass `reasoning_content` in the input `messages` sequence, the API will return a 400 error.
+
+#### `model`
+
+- Type: String
+- Required: Yes
+- Value: deepseek-reasoner
+
+The ID of the model to use. Currently, only deepseek-reasoner is supported.
+
+#### `max_tokens`
+
+- Type: Integer
+- Required: No
+- Default value: 4096
+- Maximum value: 8192
+
+The maximum length of the final answer (excluding chain-of-thought output). Please note that the chain-of-thought output can be up to 32K tokens.
+
+#### `stream`
+
+- Type: Boolean
+- Required: No
+- Default value: false
+
+Whether to use streaming response.
+
+### Unsupported Parameters
+
+The following parameters are currently not supported:
+
+- temperature
+- top_p
+- presence_penalty
+- frequency_penalty
+- logprobs
+- top_logprobs
+
+Note: To be compatible with existing software, setting `temperature`, `top_p`, `presence_penalty`, `frequency_penalty` parameters will not cause an error, but they will not take effect. Setting `logprobs`, `top_logprobs` will cause an error.
+
+### Supported Features
+
+- Chat Completion
+- Chat Prefix Completion (Beta)
+
+### Unsupported Features
+
+- Function Call
+- JSON Output
+- FIM Completion (Beta)
+
+## 📥 Response
+
+### Successful Response
+
+Returns a chat completion object, or a stream of chat completion chunk objects if the request was streamed.
+
+#### `id`
+
+- Type: String
+- Description: Unique identifier for the response.
+
+#### `object`
+
+- Type: String
+- Description: The type of object, with a value of "chat.completion".
+
+#### `created`
+
+- Type: Integer
+- Description: Timestamp when the response was created.
+
+#### `model`
+
+- Type: String
+- Description: The name of the model used, with a value of "deepseek-reasoner".
+
+#### `choices`
+
+- Type: Array
+- Description: Contains the generated reply options.
+- Attributes:
+  - `index`: Option index.
+  - `message`: Message object containing role, chain-of-thought content, and final answer.
+    - `role`: Role, with a value of "assistant".
+    - `reasoning_content`: Chain-of-thought content.
+    - `content`: Final answer content.
+  - `finish_reason`: Finish reason.
+
+#### `usage`
+
+- Type: Object
+- Description: Token usage statistics.
+- Attributes:
+  - `prompt_tokens`: Number of tokens used by the prompt.
+  - `completion_tokens`: Number of tokens used by the completion.
+  - `total_tokens`: Total number of tokens.
+
+## 📝 Context Concatenation Instructions
+
+In each round of conversation, the model outputs chain-of-thought content (`reasoning_content`) and the final answer (`content`). In the next round of conversation, the chain-of-thought content from the previous round will not be concatenated into the context, as shown in the figure below:
+
+![Deepseek reasoning 上下文拼接示意图](/assets/deepseek_r1_multiround_example_cn.png)
+
+<Callout type="warn" title="Note">
+  If you pass `reasoning_content` in the input `messages` sequence, the API will return a 400 error. Therefore, please remove the `reasoning_content` field from the API response before making another API request, as shown in the usage example below.
+</Callout>
+
+Usage Example:
+
+```python
+from openai import OpenAI
+client = OpenAI(api_key="<DeepSeek API Key>`", base_url="https://api.deepseek.com")
+
+# First round of conversation
+messages = [{"role": "user", "content": "9.11 and 9.8, which is greater?"}]
+response = client.chat.completions.create(
+    model="deepseek-reasoner",
+    messages=messages
+)
+
+reasoning_content = response.choices[0].message.reasoning_content
+content = response.choices[0].message.content
+
+# Second round of conversation - only concatenate the final answer content
+messages.append({'role': 'assistant', 'content': content})
+messages.append({'role': 'user', 'content': "How many Rs are there in the word 'strawberry'?"})
+response = client.chat.completions.create(
+    model="deepseek-reasoner",
+    messages=messages
+)
+```
+
+Streaming Response Example:
+
+```python
+# First round of conversation
+messages = [{"role": "user", "content": "9.11 and 9.8, which is greater?"}]
+response = client.chat.completions.create(
+    model="deepseek-reasoner",
+    messages=messages,
+    stream=True
+)
+
+reasoning_content = ""
+content = ""
+
+for chunk in response:
+    if chunk.choices[0].delta.reasoning_content:
+        reasoning_content += chunk.choices[0].delta.reasoning_content
+    else:
+        content += chunk.choices[0].delta.content
+
+# Second round of conversation - only concatenate the final answer content
+messages.append({"role": "assistant", "content": content})
+messages.append({'role': 'user', 'content': "How many Rs are there in the word 'strawberry'?"})
+response = client.chat.completions.create(
+    model="deepseek-reasoner",
+    messages=messages,
+    stream=True
+)
+```

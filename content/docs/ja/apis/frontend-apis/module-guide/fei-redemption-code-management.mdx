@@ -1,0 +1,425 @@
+---
+title: 引き換えコード管理モジュール
+---
+
+<Callout type="info" title="機能説明">
+インターフェースのプレフィックスは http(s)://`<your-domain>` に統一されます
+</Callout>
+
+    本番環境では認証トークンを保護するためにHTTPSを使用すべきです。HTTPは開発環境でのみ推奨されます。
+
+    管理者専用の引き換えコードシステムです。一括生成、ステータス管理、検索フィルターなどの機能をサポートしています。無効な引き換えコードを自動的にクリーンアップするメンテナンス機能が含まれています。主にプロモーション活動やユーザーインセンティブに使用されます。
+
+## 🔐 管理者認証
+
+### 引き換えコードリストの取得
+
+- **インターフェース名**：引き換えコードリストの取得
+- **HTTPメソッド**：GET
+- **パス**：`/api/redemption/`
+- **認証要件**：管理者
+- **機能概要**：システム内のすべての引き換えコードのリスト情報をページングして取得します
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/redemption/?p=1&page_size=20', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "name": "新年活動引き換えコード",
+        "key": "abc123def456",
+        "status": 1,
+        "quota": 100000,
+        "created_time": 1640908800,
+        "redeemed_time": 0,
+        "expired_time": 1640995200,
+        "used_user_id": 0
+      }
+    ],
+    "total": 50,
+    "page": 1,
+    "page_size": 20
+  }
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "引き換えコードリストの取得に失敗しました"
+}
+```
+
+🧾 フィールド説明：
+
+- `p` （数値）: ページ番号、デフォルトは1
+- `page_size` （数値）: 1ページあたりの数量、デフォルトは20
+- `items` （配列）: 引き換えコード情報リスト
+- `total` （数値）: 引き換えコードの総数
+- `page` （数値）: 現在のページ番号
+- `page_size` （数値）: 1ページあたりの数量
+
+### 引き換えコードの検索
+
+- **インターフェース名**：引き換えコードの検索
+- **HTTPメソッド**：GET
+- **パス**：`/api/redemption/search`
+- **認証要件**：管理者
+- **機能概要**：キーワードに基づいて引き換えコードを検索します。IDと名前による検索をサポートしています。
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/redemption/search?keyword=新年&p=1&page_size=20', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "name": "新年活動引き換えコード",
+        "key": "abc123def456",
+        "status": 1,
+        "quota": 100000
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 20
+  }
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "引き換えコードの検索に失敗しました"
+}
+```
+
+🧾 フィールド説明：
+
+- `keyword` （文字列）: 検索キーワード、引き換えコード名またはIDに一致します
+- `p` （数値）: ページ番号、デフォルトは1
+- `page_size` （数値）: 1ページあたりの数量、デフォルトは20
+
+### 単一の引き換えコードの取得
+
+- **インターフェース名**：単一の引き換えコードの取得
+- **HTTPメソッド**：GET
+- **パス**：`/api/redemption/:id`
+- **認証要件**：管理者
+- **機能概要**：指定された引き換えコードの詳細情報を取得します
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/redemption/123', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 123,
+    "name": "新年活動引き換えコード",
+    "key": "abc123def456",
+    "status": 1,
+    "quota": 100000,
+    "created_time": 1640908800,
+    "redeemed_time": 0,
+    "expired_time": 1640995200,
+    "used_user_id": 0,
+    "user_id": 1
+  }
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "引き換えコードが存在しません"
+}
+```
+
+🧾 フィールド説明：
+
+- `id` （数値）: 引き換えコードID、URLパスを通じて渡されます
+
+### 引き換えコードの作成
+
+- **インターフェース名**：引き換えコードの作成
+- **HTTPメソッド**：POST
+- **パス**：`/api/redemption/`
+- **認証要件**：管理者
+- **機能概要**：引き換えコードを一括作成します。一度に複数作成するのをサポートしています。
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/redemption/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    name: "春节活动兑换码",
+    count: 10,
+    quota: 100000,
+    expired_time: 1640995200
+  })
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": [
+    "abc123def456",
+    "def456ghi789",
+    "ghi789jkl012"
+  ]
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "引き換えコード名の長さは1〜20の間である必要があります"
+}
+```
+
+🧾 フィールド説明：
+
+- `name` （文字列）: 引き換えコード名、長さは1〜20文字の間である必要があります
+- `count` （数値）: 作成する引き換えコードの数量、0より大きく、100を超えてはなりません
+- `quota` （数値）: 各引き換えコードのクォータ数量
+- `expired_time` （数値）: 有効期限タイムスタンプ、0は永続を意味します
+- `data` （配列）: 正常に作成された引き換えコードのリスト
+
+### 引き換えコードの更新
+
+- **インターフェース名**：引き換えコードの更新
+- **HTTPメソッド**：PUT
+- **パス**：`/api/redemption/`
+- **認証要件**：管理者
+- **機能概要**：引き換えコード情報を更新します。ステータスのみの更新または完全な更新をサポートしています。
+
+💡 リクエスト例（完全更新）：
+
+```
+const response = await fetch('/api/redemption/', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    id: 123,
+    name: "更新された引き換えコード名",
+    quota: 200000,
+    expired_time: 1672531200
+  })
+});
+const data = await response.json();
+```
+
+💡 リクエスト例（ステータスのみ更新）：
+
+```
+const response = await fetch('/api/redemption/?status_only=true', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    id: 123,
+    status: 2
+  })
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 123,
+    "name": "更新された引き換えコード名",
+    "status": 1,
+    "quota": 200000,
+    "expired_time": 1672531200
+  }
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "有効期限は現在時刻より前であってはなりません"
+}
+```
+
+🧾 フィールド説明：
+
+- `id` （数値）: 引き換えコードID、必須
+- `status_only` （クエリパラメータ）: ステータスのみを更新するかどうか
+- `name` （文字列）: 引き換えコード名、オプション
+- `quota` （数値）: クォータ数量、オプション
+- `expired_time` （数値）: 有効期限タイムスタンプ、オプション
+- `status` （数値）: 引き換えコードステータス、オプション
+
+### 無効な引き換えコードの削除
+
+- **インターフェース名**：無効な引き換えコードの削除
+- **HTTPメソッド**：DELETE
+- **パス**：`/api/redemption/invalid`
+- **認証要件**：管理者
+- **機能概要**：使用済み、無効化済み、または期限切れの引き換えコードを一括削除します
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/redemption/invalid', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": 15
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "削除に失敗しました"
+}
+```
+
+🧾 フィールド説明：
+
+- リクエストパラメータなし
+- `data` （数値）: 削除された引き換えコードの数量
+
+### 引き換えコードの削除
+
+- **インターフェース名**：引き換えコードの削除
+- **HTTPメソッド**：DELETE
+- **パス**：`/api/redemption/:id`
+- **認証要件**：管理者
+- **機能概要**：指定された引き換えコードを削除します
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/redemption/123', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "引き換えコードが存在しません"
+}
+```
+
+🧾 フィールド説明：
+
+- `id` （数値）: 引き換えコードID、URLパスを通じて渡されます

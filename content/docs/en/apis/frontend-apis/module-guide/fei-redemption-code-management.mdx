@@ -1,0 +1,425 @@
+---
+title: Redemption Code Management Module
+---
+
+<Callout type="info" title="Feature Description">
+The API prefix is uniformly http(s)://`<your-domain>`
+</Callout>
+
+    HTTPS should be used in production environments to ensure authentication tokens. HTTP is only recommended for development environments.
+
+    An administrator-specific redemption code system. It supports features such as batch generation, status management, and search filtering. Includes maintenance functions for automatically cleaning up invalid redemption codes. Primarily used for promotional activities and user incentives.
+
+## 🔐 Administrator Authentication
+
+### Get Redemption Code List
+
+- **Interface Name**: Get Redemption Code List
+- **HTTP Method**: GET
+- **Path**: `/api/redemption/`
+- **Authentication Requirements**: Administrator
+- **Feature Description**: Paginate and retrieve list information for all redemption codes in the system
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/redemption/?p=1&page_size=20', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "name": "新年活动兑换码",
+        "key": "abc123def456",
+        "status": 1,
+        "quota": 100000,
+        "created_time": 1640908800,
+        "redeemed_time": 0,
+        "expired_time": 1640995200,
+        "used_user_id": 0
+      }
+    ],
+    "total": 50,
+    "page": 1,
+    "page_size": 20
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "获取兑换码列表失败"
+}
+```
+
+🧾 Field Description:
+
+- `p` (number): Page number, defaults to 1
+- `page_size` (number): Number of items per page, defaults to 20
+- `items` (array): List of redemption code information
+- `total` (number): Total number of redemption codes
+- `page` (number): Current page number
+- `page_size` (number): Number of items per page
+
+### Search Redemption Codes
+
+- **Interface Name**: Search Redemption Codes
+- **HTTP Method**: GET
+- **Path**: `/api/redemption/search`
+- **Authentication Requirements**: Administrator
+- **Feature Description**: Search for redemption codes by keyword, supporting search by ID and name
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/redemption/search?keyword=新年&p=1&page_size=20', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "name": "新年活动兑换码",
+        "key": "abc123def456",
+        "status": 1,
+        "quota": 100000
+      }
+    ],
+    "total": 1,
+    "page": 1,
+    "page_size": 20
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "搜索兑换码失败"
+}
+```
+
+🧾 Field Description:
+
+- `keyword` (string): Search keyword, can match redemption code name or ID
+- `p` (number): Page number, defaults to 1
+- `page_size` (number): Number of items per page, defaults to 20
+
+### Get Single Redemption Code
+
+- **Interface Name**: Get Single Redemption Code
+- **HTTP Method**: GET
+- **Path**: `/api/redemption/:id`
+- **Authentication Requirements**: Administrator
+- **Feature Description**: Get detailed information for a specified redemption code
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/redemption/123', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 123,
+    "name": "新年活动兑换码",
+    "key": "abc123def456",
+    "status": 1,
+    "quota": 100000,
+    "created_time": 1640908800,
+    "redeemed_time": 0,
+    "expired_time": 1640995200,
+    "used_user_id": 0,
+    "user_id": 1
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "兑换码不存在"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): Redemption code ID, passed via URL path
+
+### Create Redemption Code
+
+- **Interface Name**: Create Redemption Code
+- **HTTP Method**: POST
+- **Path**: `/api/redemption/`
+- **Authentication Requirements**: Administrator
+- **Feature Description**: Batch create redemption codes, supporting creation of multiple codes at once
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/redemption/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    name: "春节活动兑换码",
+    count: 10,
+    quota: 100000,
+    expired_time: 1640995200
+  })
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": [
+    "abc123def456",
+    "def456ghi789",
+    "ghi789jkl012"
+  ]
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "兑换码名称长度必须在1-20之间"
+}
+```
+
+🧾 Field Description:
+
+- `name` (string): Redemption code name, length must be between 1-20 characters
+- `count` (number): Number of redemption codes to create, must be greater than 0 and not exceed 100
+- `quota` (number): Quota amount for each redemption code
+- `expired_time` (number): Expiration timestamp, 0 means never expires
+- `data` (array): List of successfully created redemption codes
+
+### Update Redemption Code
+
+- **Interface Name**: Update Redemption Code
+- **HTTP Method**: PUT
+- **Path**: `/api/redemption/`
+- **Authentication Requirements**: Administrator
+- **Feature Description**: Update redemption code information, supporting status-only updates or full updates
+
+💡 Request Example (Full Update):
+
+```
+const response = await fetch('/api/redemption/', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    id: 123,
+    name: "更新的兑换码名称",
+    quota: 200000,
+    expired_time: 1672531200
+  })
+});
+const data = await response.json();
+```
+
+💡 Request Example (Status-Only Update):
+
+```
+const response = await fetch('/api/redemption/?status_only=true', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  },
+  body: JSON.stringify({
+    id: 123,
+    status: 2
+  })
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": {
+    "id": 123,
+    "name": "更新的兑换码名称",
+    "status": 1,
+    "quota": 200000,
+    "expired_time": 1672531200
+  }
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "过期时间不能早于当前时间"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): Redemption code ID, required
+- `status_only` (query parameter): Whether to update status only
+- `name` (string): Redemption code name, optional
+- `quota` (number): Quota amount, optional
+- `expired_time` (number): Expiration timestamp, optional
+- `status` (number): Redemption code status, optional
+
+### Delete Invalid Redemption Codes
+
+- **Interface Name**: Delete Invalid Redemption Codes
+- **HTTP Method**: DELETE
+- **Path**: `/api/redemption/invalid`
+- **Authentication Requirements**: Administrator
+- **Feature Description**: Batch delete used, disabled, or expired redemption codes
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/redemption/invalid', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": 15
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "删除失败"
+}
+```
+
+🧾 Field Description:
+
+- No request parameters
+- `data` (number): Number of redemption codes deleted
+
+### Delete Redemption Code
+
+- **Interface Name**: Delete Redemption Code
+- **HTTP Method**: DELETE
+- **Path**: `/api/redemption/:id`
+- **Authentication Requirements**: Administrator
+- **Feature Description**: Delete the specified redemption code
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/redemption/123', {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "兑换码不存在"
+}
+```
+
+🧾 Field Description:
+
+- `id` (number): Redemption code ID, passed via URL path

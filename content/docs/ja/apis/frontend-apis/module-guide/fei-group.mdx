@@ -1,0 +1,63 @@
+---
+title: グループモジュール
+---
+
+<Callout type="info" title="機能説明">
+インターフェースのプレフィックスは http(s)://`<your-domain>` に統一されます
+</Callout>
+
+    本番環境では、認証トークンを保護するためにHTTPSを使用する必要があります。HTTPは開発環境でのみ推奨されます。
+
+    シンプルなグループ名照会インターフェースです。主に管理者インターフェースのドロップダウン選択コンポーネントで使用され、ユーザー側のグループインターフェースとは異なり、倍率などの詳細情報を含まずに名前リストのみを返します。
+
+## 🔐 管理者認証
+
+### 全グループリストの取得
+
+- **インターフェース名**：全グループリストの取得
+- **HTTP メソッド**：GET
+- **パス**：`/api/group/`
+- **認証要件**：管理者
+- **機能概要**：システム内のすべてのユーザーグループの名前リストを取得し、管理者設定およびフロントエンドコンポーネントの選択に使用します
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/group/', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功レスポンス例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": [
+    "default",
+    "vip",
+    "premium",
+    "enterprise"
+  ]
+}
+```
+
+❗ 失敗レスポンス例：
+
+```
+{
+  "success": false,
+  "message": "グループリストの取得に失敗しました"
+}
+```
+
+🧾 フィールド説明：
+
+`data` （配列）: グループ名リスト。システムに設定されているすべてのユーザーグループ名が含まれます。

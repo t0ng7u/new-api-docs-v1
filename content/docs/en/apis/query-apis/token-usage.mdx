@@ -1,0 +1,101 @@
+---
+title: Token Usage Query
+---
+
+<Callout type="info" title="Feature Description">
+  Query the quota usage of the current Bearer Token through authentication: total granted, used, remaining, whether it's unlimited, model limits, and expiration time.
+</Callout>
+
+## 📮 Endpoint
+
+```
+GET /api/usage/token
+```
+
+- Authentication information needs to be carried in the request header
+- Only returns usage information for the Token used in the current request
+
+## 🔐 Authentication
+
+Include the following in the request header for API key authentication:
+
+```
+Authorization: Bearer $NEWAPI_API_KEY
+```
+
+- Supports carrying or not carrying the `sk-` prefix, the server will automatically be compatible
+- A missing or invalid Authorization header will return 401
+
+## 💡 Request Example
+
+```bash
+curl -X GET https://你的newapi服务器地址/api/usage/token \
+  -H "Authorization: Bearer $NEWAPI_API_KEY"
+```
+
+## ✅ Successful Response Example
+
+```json
+{
+  "code": true,
+  "message": "ok",
+  "data": {
+    "object": "token_usage",
+    "name": "Default Token",
+    "total_granted": 1000000,
+    "total_used": 12345,
+    "total_available": 987655,
+    "unlimited_quota": false,
+    "model_limits": {
+      "gpt-4o-mini": true
+    },
+    "model_limits_enabled": false,
+    "expires_at": 0
+  }
+}
+```
+
+## ❗ Error Response Example
+
+- Missing Authorization header:
+
+```json
+{
+  "success": false,
+  "message": "No Authorization header"
+}
+```
+
+- Non-Bearer scheme:
+
+```json
+{
+  "success": false,
+  "message": "Invalid Bearer token"
+}
+```
+
+- Token lookup failed (e.g., invalid or deleted):
+
+```json
+{
+  "success": false,
+  "message": "token not found"
+}
+```
+
+## 🧾 Field Description (data)
+
+- `object`: Fixed as `token_usage`
+- `name`: Token name
+- `total_granted`: Total granted (= used + remaining)
+- `total_used`: Used quota
+- `total_available`: Available remaining quota
+- `unlimited_quota`: Whether it's an unlimited quota
+- `model_limits`: List of allowed models
+- `model_limits_enabled`: Whether model limits are enabled
+- `expires_at`: Unix timestamp (seconds) of expiration time. Returns `0` if it never expires (backend normalizes `-1` to `0`)
+
+---
+
+> Reference implementation: `GET /api/usage/token` added in PR [#1161](https://github.com/QuantumNous/new-api/pull/1161)

@@ -1,0 +1,14 @@
+---
+title: 認証システムの説明（Auth）
+---
+
+<Callout type="info" title="説明">
+  システムは4段階の認証メカニズムを採用しています：公開、ユーザー、管理者、Root AccessTokenは、**/api** ルートへのアクセスに使用するために、**個人設定 - システムアクセストークン** で生成されるトークンです。
+</Callout>
+
+## 🔐 認証
+
+- 公開：ログイン不要
+- ユーザー：ユーザー AccessToken が必要（middleware.UserAuth）
+- 管理者：管理者 AccessToken が必要（middleware.AdminAuth）
+- Root：最高権限ユーザー AccessToken のみ（middleware.RootAuth）

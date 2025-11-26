@@ -1,0 +1,63 @@
+---
+title: Group Module
+---
+
+<Callout type="info" title="Feature Description">
+The API prefix is uniformly http(s)://`<your-domain>`
+</Callout>
+
+    HTTPS should be used in production environments to ensure authentication tokens. HTTP is only recommended for development environments.
+
+    A simple group name query interface. Primarily used for dropdown selection components in the administrator interface, unlike the user-side group interface, it only returns a list of names without detailed information such as ratios.
+
+## 🔐 Administrator Authentication
+
+### Get All Group List
+
+- **Interface Name**: Get All Group List
+- **HTTP Method**: GET
+- **Path**: `/api/group/`
+- **Authentication Requirement**: Administrator
+- **Feature Description**: Retrieves a list of names for all user groups in the system, used for administrator configuration and frontend component selection.
+
+💡 Request Example:
+
+```
+const response = await fetch('/api/group/', {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer your_admin_token',
+    'New-Api-User': 'your_user_id'
+  }
+});
+const data = await response.json();
+```
+
+✅ Successful Response Example:
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": [
+    "default",
+    "vip",
+    "premium",
+    "enterprise"
+  ]
+}
+```
+
+❗ Failed Response Example:
+
+```
+{
+  "success": false,
+  "message": "Failed to retrieve group list"
+}
+```
+
+🧾 Field Description:
+
+`data` (Array): A list of group names, containing all configured user group names in the system.

@@ -1,0 +1,267 @@
+---
+title: Cohere Rerank Format
+---
+
+<Callout type="warn" title="Important Note">
+  Cohere's Rerank model interface and [Jina's Rerank model interface format](jinaai-rerank.md)
+  are the same.
+</Callout>
+
+<Callout type="info" title="Official Documentation">
+  [Cohere Rerank](https://docs.cohere.com/reference/rerank)
+</Callout>
+
+## 📝 Introduction
+
+Given a query and a list of texts, the Rerank API will sort the texts based on their relevance to the query. Each text will be assigned a relevance score, resulting in an ordered array. This feature is particularly useful for search and retrieval applications, optimizing document ranking and helping users find relevant information faster.
+
+## 💡 Request Examples
+
+### Basic Rerank Request ✅
+
+```bash
+curl https://your_newapi_server_address/v1/rerank \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "rerank-v3.5",
+    "query": "What is the capital of the United States?",
+    "documents": [
+      "The capital of Nevada is Carson City.",
+      "The Northern Mariana Islands are a group of islands in the Pacific Ocean, and their capital is Saipan.",
+      "Washington, D.C. (also known as Washington or D.C., officially the District of Columbia) is the capital of the United States.",
+      "Capitalization in English grammar is the use of capital letters at the beginning of words. English usage differs from capitalization in other languages.",
+      "Capital punishment existed in the United States even before it became a nation. As of 2017, capital punishment is legal in 30 of the 50 states."
+    ],
+    "top_n": 3
+  }'
+```
+
+**Response example:**
+
+```json
+{
+  "results": [
+    {
+      "index": 2,
+      "relevance_score": 0.999071
+    },
+    {
+      "index": 0,
+      "relevance_score": 0.32713068
+    },
+    {
+      "index": 1,
+      "relevance_score": 0.1867867
+    }
+  ],
+  "id": "07734bd2-2473-4f07-94e1-0d9f0e6843cf",
+  "meta": {
+    "api_version": {
+      "version": "2",
+      "is_experimental": false
+    },
+    "billed_units": {
+      "search_units": 1
+    }
+  }
+}
+```
+
+### Using Structured Data ✅
+
+```bash
+curl https://your_newapi_server_address/v1/rerank \
+  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "rerank-v3.5",
+    "query": "Looking for a cost-effective DSLR camera suitable for beginners",
+    "documents": [
+      "Model: Canon EOS 800D\nPrice: 4299 RMB\nFeatures: 24.1 million pixels, optical viewfinder, Wi-Fi\nSuitable for: Beginners, enthusiasts",
+      "Model: Nikon D3500\nPrice: 3099 RMB\nFeatures: 24.16 million pixels, optical viewfinder, battery life up to 1550 shots\nSuitable for: New users, students",
+      "Model: Sony A7III\nPrice: 12999 RMB\nFeatures: 24.2 million pixels, full-frame, 4K video\nSuitable for: Professional photographers, video creators"
+    ],
+    "max_tokens_per_doc": 512
+  }'
+```
+
+**Response example:**
+
+```json
+{
+  "results": [
+    {
+      "index": 1,
+      "relevance_score": 0.918472
+    },
+    {
+      "index": 0,
+      "relevance_score": 0.854321
+    },
+    {
+      "index": 2,
+      "relevance_score": 0.423156
+    }
+  ],
+  "id": "8f734bd2-2473-4f07-94e1-0d9f0e68ebfa",
+  "meta": {
+    "api_version": {
+      "version": "2"
+    },
+    "billed_units": {
+      "search_units": 1
+    }
+  }
+}
+```
+
+## 📮 Request
+
+### Endpoint
+
+```
+POST /v1/rerank
+```
+
+Reranks a list of texts based on their relevance to a query.
+
+### Authentication Method
+
+Include the following in the request header for API key authentication:
+
+```
+Authorization: Bearer $NEWAPI_API_KEY
+```
+
+Where `$NEWAPI_API_KEY` is your API key.
+
+### Request Header Parameters
+
+#### `X-Client-Name`
+
+- Type: string
+- Required: No
+- Description: The name of the project initiating the request.
+
+### Request Body Parameters
+
+#### `model`
+
+- Type: string
+- Required: Yes
+- Description: The identifier of the model to use, e.g., rerank-v3.5.
+
+#### `query`
+
+- Type: string
+- Required: Yes
+- Description: The search query text. This is the question or query content entered by the user.
+
+#### `documents`
+
+- Type: array of strings
+- Required: Yes
+- Description: A list of texts to be compared with the query. For optimal performance, it is recommended not to send more than 1,000 documents in a single request.
+- Notes:
+  - Long documents will be automatically truncated to the value specified by max_tokens_per_doc
+  - Structured data should be formatted as a YAML string for optimal performance
+
+#### `top_n`
+
+- Type: integer
+- Required: No
+- Description: Limits the number of reranked results returned. If not specified, all reranked results will be returned.
+
+#### `max_tokens_per_doc`
+
+- Type: integer
+- Required: No
+- Default: 4096
+- Description: Long documents will be automatically truncated to the specified number of tokens.
+
+## 📥 Response
+
+### Successful Response
+
+Returns an object containing a list of sorted documents.
+
+#### `results`
+
+- Type: array of objects
+- Description: A list of sorted documents, ordered by relevance in descending order
+- Properties:
+  - `index`: integer, corresponds to the index of the document in the original document list
+  - `relevance_score`: float, relevance score ranging from [0, 1]. A score close to 1 indicates high relevance to the query, while a score close to 0 indicates lower relevance
+
+#### `id`
+
+- Type: string
+- Description: A unique identifier for the request
+
+#### `meta`
+
+- Type: object
+- Description: Contains metadata about the request
+- Properties:
+  - `api_version`: object, contains API version information
+    - `version`: string, API version number
+    - `is_deprecated`: boolean, whether it is deprecated
+    - `is_experimental`: boolean, whether it is an experimental feature
+  - `billed_units`: object, contains billing information
+    - `search_units`: float, number of search units billed
+  - `tokens`: object, contains token usage statistics
+    - `input_tokens`: float, number of tokens used as model input
+    - `output_tokens`: float, number of tokens generated by the model
+
+#### `warnings`
+
+- Type: array of strings
+- Required: No
+- Description: Warning messages returned by the API
+
+### Error Response
+
+When issues occur with a request, the API may return the following HTTP status codes and corresponding errors:
+
+- `400 Bad Request`: Incorrect request format or parameters
+- `401 Unauthorized`: No valid API key provided
+- `403 Forbidden`: No permission to access this resource
+- `404 Not Found`: The requested resource does not exist
+- `422 Unprocessable Entity`: The request format is correct but contains semantic errors
+- `429 Too Many Requests`: Request frequency exceeds the limit
+- `500 Internal Server Error`: Internal server error
+- `503 Service Unavailable`: Service temporarily unavailable
+
+## 🌟 Best Practices
+
+### Document Preparation Recommendations
+
+1.  **Document Length**: Keep each document concise and clear, avoiding excessive length. Long documents will be automatically truncated.
+2.  **Structured Data**: Format structured data as a YAML string for optimal performance. For example:
+
+    ```yaml
+    title: Product Name
+    price: 9999 RMB
+    features:
+      - Feature 1
+      - Feature 2
+    ```
+
+3.  **Document Quantity**: Do not exceed 1,000 documents in a single request for optimal performance.
+
+### Query Optimization
+
+1.  **Clear and Specific**: Formulate clear and specific queries to obtain more accurate ranking results.
+
+2.  **Avoid Vague Queries**: Try to avoid overly vague or generic query terms, as this may lead to less distinct relevance score differences.
+
+### Understanding Relevance Scores
+
+Relevance scores are values normalized to the range [0, 1]:
+
+-   A score close to 1 indicates high relevance to the query
+
+-   A score close to 0 indicates low relevance
+
+Note: It cannot be simply assumed that a document with a score of 0.9 is twice as relevant as a document with a score of 0.45. Relevance scores are relative indicators used for ranking, not for absolute comparison.

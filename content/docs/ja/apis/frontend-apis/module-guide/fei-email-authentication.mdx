@@ -1,0 +1,148 @@
+---
+title: メール認証モジュール
+---
+
+<Callout type="info" title="機能説明">
+APIプレフィックスは http(s)://`<your-domain>` に統一されます。
+</Callout>
+
+    本番環境では認証トークンを保護するためにHTTPSを使用する必要があります。HTTPは開発環境でのみ推奨されます。
+
+    メール認証およびパスワードリセット機能を実装し、レート制限とTurnstile保護を統合します。ランダムパスワードの自動生成とメールテンプレートのカスタマイズをサポートしています。ユーザー登録、アカウント連携などのシナリオで広く使用されています。
+
+## 🔐 認証不要
+
+### メール認証メールの送信
+
+- **インターフェース名**：メール認証メールの送信
+- **HTTPメソッド**：GET
+- **パス**：`/api/verification`
+- **認証要件**：公開（レート制限あり）
+- **機能概要**：指定されたメールアドレスにメール認証コードを送信し、メールの連携または認証操作に使用します。
+
+💡 リクエスト例：
+
+```
+const response = await fetch(`/api/verification?email=${email}&turnstile=${turnstileToken}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功応答例：
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ 失敗応答例：
+
+```
+{
+  "success": false,
+  "message": "无效的参数"
+}
+```
+
+🧾 フィールド説明：
+
+- `email` （文字列）: 認証コードを受け取るメールアドレス。有効なメール形式である必要があります。
+- `turnstile` （文字列）: Turnstile認証トークン。ボット攻撃を防ぐために使用されます。
+
+### パスワードリセットメールの送信
+
+- **インターフェース名**：パスワードリセットメールの送信
+- **HTTPメソッド**：GET
+- **パス**：`/api/reset_password`
+- **認証要件**：公開（レート制限あり）
+- **機能概要**：登録済みのメールアドレスにパスワードリセットリンクを送信し、ユーザーがパスワードを回復するために使用します。
+
+💡 リクエスト例：
+
+```
+const response = await fetch(`/api/reset_password?email=${email}&turnstile=${turnstileToken}`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+const data = await response.json();
+```
+
+✅ 成功応答例：
+
+```
+{
+  "success": true,
+  "message": ""
+}
+```
+
+❗ 失敗応答例：
+
+```
+{
+  "success": false,
+  "message": "该邮箱地址未注册"
+}
+```
+
+🧾 フィールド説明：
+
+- `email` （文字列）: パスワードをリセットする必要があるメールアドレス。登録済みのメールアドレスである必要があります。
+- `turnstile` （文字列）: Turnstile認証トークン。悪意のあるリクエストを防ぐために使用されます。
+
+### パスワードリセットリクエストの送信
+
+- **インターフェース名**：パスワードリセットリクエストの送信
+- **HTTPメソッド**：POST
+- **パス**：`/api/user/reset`
+- **認証要件**：公開
+- **機能概要**：メール内のリセットリンクを通じてパスワードリセットを完了します。システムは新しいパスワードを生成して返します。
+
+💡 リクエスト例：
+
+```
+const response = await fetch('/api/user/reset', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    email: "user@example.com",
+    token: "verification_token_from_email"
+  })
+});
+const data = await response.json();
+```
+
+✅ 成功応答例：
+
+```
+{
+  "success": true,
+  "message": "",
+  "data": "newPassword123"
+}
+```
+
+❗ 失敗応答例：
+
+```
+{
+  "success": false,
+  "message": "重置链接非法或已过期"
+}
+```
+
+🧾 フィールド説明：
+
+- `email` （文字列）: パスワードをリセットするメールアドレス。
+- `token` （文字列）: リセットメールから取得した認証トークン。
+- `data` （文字列）: 成功時に返される新しいパスワード。システムが12桁のランダムパスワードを自動生成します。
