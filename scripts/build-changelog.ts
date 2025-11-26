@@ -285,6 +285,7 @@ async function generateChangelog() {
         'content',
         'docs',
         lang,
+        'guide',
         'wiki',
         'changelog.mdx'
       );

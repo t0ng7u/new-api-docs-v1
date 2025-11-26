@@ -1,0 +1,14 @@
+{
+  "title": "中继接口",
+  "icon": "ArrowRightLeft",
+  "pages": [
+    "chat",
+    "embeddings",
+    "rerank",
+    "realtime",
+    "image",
+    "audio",
+    "music",
+    "video"
+  ]
+}

@@ -5,19 +5,19 @@
   "root": true,
   "pages": [
     "---中继接口---",
-    "chat",
-    "embeddings",
-    "rerank",
-    "realtime",
-    "image",
-    "audio",
-    "music",
-    "video",
+    "relay-apis/chat",
+    "relay-apis/embeddings",
+    "relay-apis/rerank",
+    "relay-apis/realtime",
+    "relay-apis/image",
+    "relay-apis/audio",
+    "relay-apis/music",
+    "relay-apis/video",
     "---查询接口---",
-    "token-usage",
+    "query-apis/token-usage",
     "---前端接口---",
-    "auth-system-description",
-    "get-available-models-list",
-    "api-modules"
+    "frontend-apis/auth-system-description",
+    "frontend-apis/get-available-models-list",
+    "frontend-apis/module-guide"
   ]
 }

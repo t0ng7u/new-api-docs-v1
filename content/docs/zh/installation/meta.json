@@ -5,15 +5,15 @@
   "root": true,
   "pages": [
     "---安装部署---",
-    "docker-compose-installation",
-    "docker-installation",
-    "1panel-installation",
-    "bt-docker-installation",
-    "cluster-deployment",
-    "local-development",
+    "deployment-methods/docker-compose-installation",
+    "deployment-methods/docker-installation",
+    "deployment-methods/1panel-installation",
+    "deployment-methods/bt-docker-installation",
+    "deployment-methods/cluster-deployment",
+    "deployment-methods/local-development",
     "---配置维护---",
-    "../configuration/system-update",
-    "../configuration/environment-variables",
-    "../configuration/docker-compose-yml"
+    "config-maintenance/system-update",
+    "config-maintenance/environment-variables",
+    "config-maintenance/docker-compose-yml"
   ]
 }

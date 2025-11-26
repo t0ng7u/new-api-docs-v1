@@ -1,0 +1,9 @@
+{
+  "title": "前端接口",
+  "icon": "Layout",
+  "pages": [
+    "auth-system-description",
+    "get-available-models-list",
+    "module-guide"
+  ]
+}

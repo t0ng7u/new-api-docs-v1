@@ -516,6 +516,7 @@ async function generateSpecialThanks() {
         'content',
         'docs',
         lang,
+        'guide',
         'wiki',
         'special-thanks.mdx'
       );

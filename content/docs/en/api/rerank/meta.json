@@ -1,4 +1,0 @@
-{
-  "title": "Rerank",
-  "pages": ["jinaai-rerank", "cohere-rerank", "xinference-rerank"]
-}
