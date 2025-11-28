@@ -42,3 +42,5 @@ yarn.lock
 .turbo
 .cache
 
+# mdx files (prevent prettier from breaking fumadocs format)
+content/**/*.mdx

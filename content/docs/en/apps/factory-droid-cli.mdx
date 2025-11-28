@@ -2,50 +2,22 @@
 title: Factory Droid CLI
 ---
 
----
-
-<div className="inline-badge" style={{ lineHeight: 1, display: 'block' }}>
-  <img
-    src="https://img.shields.io/badge/-Windows-0078D6?logo=windows&style=flat&logoColor=white"
-    alt="Windows"
-    style={{ height: '20px', margin: 0, verticalAlign: 'top' }}
-  />
-  <img
-    src="https://img.shields.io/badge/-macOS-black?logo=apple&style=flat&logoColor=white"
-    alt="macOS"
-    style={{ height: '20px', margin: 0, verticalAlign: 'top' }}
-  />
-  <img
-    src="https://img.shields.io/badge/-Linux-FCC624?logo=linux&style=flat&logoColor=black"
-    alt="Linux"
-    style={{ height: '20px', margin: 0, verticalAlign: 'top' }}
-  />
-</div>
-
 <Callout type="info" title="Project Introduction">
-  Command Line: Automation Across the SDLC. Script and parallelize Droids at
-  massive scale for CI/CD, migrations, and maintenance. From automated code
-  review to self-healing builds, integrate agents into every phase of
-  development.
+  Droid CLI is a command-line tool developed by Factory AI, designed to run as an AI software engineering agent. It allows users to interact with various large language models through the terminal, build, debug, and refactor code, and even create complete applications.
+
+  - Official Homepage: [https://factory.ai/product/cli](https://factory.ai/product/cli)
+  - Official Documentation: [https://docs.factory.ai/cli/getting-started/quickstart](https://docs.factory.ai/cli/getting-started/quickstart)
 </Callout>
 
-    Droid CLI is a command-line tool developed by Factory AI, designed to run as an AI software engineering agent. It allows users to interact with various large language models through the terminal, build, debug, and refactor code, and even create complete applications.
-
-    1. Official Homepage: <a href="https://factory.ai/product/cli" target="_blank" rel="noopener noreferrer">https://factory.ai/product/cli</a>
-    1. Official Documentation: <a href="https://docs.factory.ai/cli/getting-started/quickstart" target="_blank" rel="noopener noreferrer">https://docs.factory.ai/cli/getting-started/quickstart</a>
-    1. Installation Method: See tutorial below on this page
-
 ## Demo
-
----
 
 ![droid.webp](/assets/factory_droid_cli/droid_example.webp)
 
 ### Features
 
 | Category                       | Feature                                                                                                                     | Value/Capability                                               | Example/Notes                                                             |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------- |
-| Quick Start with CLI           | 30-second installation; launch droid interactive session in project directory; supports macOS/Linux and Windows             | Rapid integration into current projects, no new tools required | Windows Installation: `irm https://app.factory.ai/cli/windows             | iex`; Launch: `droid` |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Quick Start with CLI           | 30-second installation; launch droid interactive session in project directory; supports macOS/Linux and Windows             | Rapid integration into current projects, no new tools required | Windows Installation: `irm https://app.factory.ai/cli/windows \| iex`; Launch: `droid` |
 | End-to-End Feature Development | Full-process automation from planning to implementation to testing; transparent review process                              | Accelerate delivery, maintain human oversight                  | Native diff viewing and approval process (see "Transparency and Control") |
 | Deep Codebase Understanding    | Integrates organizational shared knowledge from codebases, documentation, issue tracking; context-aware, improves over time | More accurate suggestions and changes                          | Continuously leverages knowledge across repositories and documents        |
 | Engineering System Integration | Native integration with Jira, Notion, Slack, and other tools; development work stays synchronized with team processes       | Reduce tool switching and information silos                    | "etc." indicates more integrations                                        |
@@ -69,7 +41,9 @@ title: Factory Droid CLI
 Official one-click installation command:
 
 <Callout type="info" title="One-click Installation Command">
-  ` irm https://app.factory.ai/cli/windows | iex `
+  ```powershell
+  irm https://app.factory.ai/cli/windows | iex
+  ```
 </Callout>
 
 ![windows-install](/assets/factory_droid_cli/windows_install_droid.webp)
@@ -81,9 +55,9 @@ Droid CLI requires modifying the configuration file to use third-party APIs.
 ![windows-configure.webp](/assets/factory_droid_cli/factory_cli_setup_windows.png)
 
 <Callout type="info" title="Modify Environment Variables">
-  ` iex (irm
-  'https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.ps1')
-  `
+  ```powershell
+  iex (irm 'https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.ps1')
+  ```
 </Callout>
 
 #### 4. Start Using Droid CLI
@@ -91,30 +65,42 @@ Droid CLI requires modifying the configuration file to use third-party APIs.
 Now you can start using Droid CLI!
 
 <Callout type="info" title="Launch Droid CLI">
-  Launch Droid CLI directly: ` # Launch Droid CLI droid ` Use in a specific
-  project: ` # Navigate to your project directory cd C:\path\to\your\project ` `
-  # Launch Droid CLI droid ` Press Enter to launch Droid CLI
+  Launch Droid CLI directly:
+
+  ```bash
+  droid
+  ```
+
+  Use in a specific project:
+
+  ```bash
+  # Navigate to your project directory
+  cd C:\path\to\your\project
+
+  # Launch Droid CLI
+  droid
+  ```
+
+  Press Enter to launch Droid CLI.
 </Callout>
 
 Droid CLI requires users to log in to an official account (free) before use.
 
 #### 5. Windows Common Issues Solution
 
-<Callout
-  type="info"
-  title='Installation prompts "permission denied" error'
-  collapsible
->
+<Callout type="info" title='Installation prompts "permission denied" error'>
   This is usually a permission issue. Try the following solutions:
+
+  - Run PowerShell as an administrator
+  - Or configure `npm` to use the user directory: `npm config set prefix %APPDATA%\npm`
 </Callout>
 
-    - Run `PowerShell` as an administrator
+<Callout type="info" title="PowerShell Execution Policy Error">
+  If you encounter an execution policy restriction, run:
 
-    - Or configure `npm` to use the user directory: `npm config set prefix %APPDATA%\npm`
-
-<Callout type="info" title="PowerShell Execution Policy Error" collapsible>
-  If you encounter an execution policy restriction, run: ` Set-ExecutionPolicy
-  -ExecutionPolicy RemoteSigned -Scope CurrentUser `
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  ```
 </Callout>
 
 ### macOS/Linux Graphical Guide
@@ -122,8 +108,11 @@ Droid CLI requires users to log in to an official account (free) before use.
 #### 1. Install Droid CLI
 
 <Callout type="info" title="Install Droid CLI">
-  Open your terminal and run the following command: ` curl -fsSL
-  https://app.factory.ai/cli | sh `
+  Open your terminal and run the following command:
+
+  ```bash
+  curl -fsSL https://app.factory.ai/cli | sh
+  ```
 </Callout>
 
 ![macos-open-terminal](/assets/factory_droid_cli/macos_install_droid.webp)
@@ -135,8 +124,10 @@ Follow the installation prompts to modify environment variables (copy the instal
 For Linux, choose `~/.bashrc` or `~/.zshrc` as appropriate.
 
 <Callout type="info" title="Droid CLI Environment Variables (Example Only)">
-  ` echo 'export PATH=/Users/modify_here/.local/bin:$PATH' >> ~/.zshrc ` `
-  source ~/.zshrc `
+  ```bash
+  echo 'export PATH=/Users/modify_here/.local/bin:$PATH' >> ~/.zshrc
+  source ~/.zshrc
+  ```
 </Callout>
 
 #### 2. Modify Configuration File
@@ -144,9 +135,9 @@ For Linux, choose `~/.bashrc` or `~/.zshrc` as appropriate.
 Droid CLI requires modifying the configuration file to use third-party APIs.
 
 <Callout type="info" title="One-click Configuration File Modification">
-  ` curl -fsSL
-  https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.sh
-  | bash `
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.sh | bash
+  ```
 </Callout>
 
 ![macos-img-03.webp](/assets/factory_droid_cli/macos_configure.png)
@@ -156,9 +147,23 @@ Droid CLI requires modifying the configuration file to use third-party APIs.
 Now you can start using Droid CLI!
 
 <Callout type="info" title="Launch Droid CLI">
-  Launch Droid CLI directly: ` # Launch Droid CLI droid ` Use in a specific
-  project: ` # Navigate to your project directory cd /path/to/your/project ` ` #
-  Launch Droid CLI droid ` Press Enter to launch Droid CLI
+  Launch Droid CLI directly:
+
+  ```bash
+  droid
+  ```
+
+  Use in a specific project:
+
+  ```bash
+  # Navigate to your project directory
+  cd /path/to/your/project
+
+  # Launch Droid CLI
+  droid
+  ```
+
+  Press Enter to launch Droid CLI.
 </Callout>
 
 > Droid CLI requires users to log in to an official account (free) before use.

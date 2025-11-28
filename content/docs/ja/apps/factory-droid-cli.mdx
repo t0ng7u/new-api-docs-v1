@@ -2,50 +2,22 @@
 title: Factory Droid CLI
 ---
 
----
-
-<div className="inline-badge" style={{ lineHeight: 1, display: 'block' }}>
-  <img
-    src="https://img.shields.io/badge/-Windows-0078D6?logo=windows&style=flat&logoColor=white"
-    alt="Windows"
-    style={{ height: '20px', margin: 0, verticalAlign: 'top' }}
-  />
-  <img
-    src="https://img.shields.io/badge/-macOS-black?logo=apple&style=flat&logoColor=white"
-    alt="macOS"
-    style={{ height: '20px', margin: 0, verticalAlign: 'top' }}
-  />
-  <img
-    src="https://img.shields.io/badge/-Linux-FCC624?logo=linux&style=flat&logoColor=black"
-    alt="Linux"
-    style={{ height: '20px', margin: 0, verticalAlign: 'top' }}
-  />
-</div>
-
 <Callout type="info" title="プロジェクト紹介">
-  Command Line: Automation Across the SDLC. Script and parallelize Droids at
-  massive scale for CI/CD, migrations, and maintenance. From automated code
-  review to self-healing builds, integrate agents into every phase of
-  development.
+  Droid CLI は、Factory AI によって開発されたコマンドラインツールであり、AIソフトウェアエンジニアリングエージェントとして動作するように設計されています。ユーザーはターミナルを介して様々な大規模言語モデルと対話し、コードの構築、デバッグ、リファクタリング、さらには完全なアプリケーションの作成を行うことができます。
+
+  - 公式サイト：[https://factory.ai/product/cli](https://factory.ai/product/cli)
+  - 公式ドキュメント：[https://docs.factory.ai/cli/getting-started/quickstart](https://docs.factory.ai/cli/getting-started/quickstart)
 </Callout>
 
-    Droid CLI は、Factory AI によって開発されたコマンドラインツールであり、AIソフトウェアエンジニアリングエージェントとして動作するように設計されています。ユーザーはターミナルを介して様々な大規模言語モデルと対話し、コードの構築、デバッグ、リファクタリング、さらには完全なアプリケーションの作成を行うことができます。
-
-    1. 公式サイト：<a href="https://factory.ai/product/cli" target="_blank" rel="noopener noreferrer">https://factory.ai/product/cli</a>
-    1. 公式ドキュメント：<a href="https://docs.factory.ai/cli/getting-started/quickstart" target="_blank" rel="noopener noreferrer">https://docs.factory.ai/cli/getting-started/quickstart</a>
-    1. インストール方法：本ページ下部のチュートリアルを参照
-
 ## デモンストレーション
-
----
 
 ![droid.webp](/assets/factory_droid_cli/droid_example.webp)
 
 ### 機能
 
 | カテゴリ                     | 機能                                                                                                                    | 価値/能力                                              | 例/備考                                                       |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------- | ------------------- |
-| クイックスタートとCLI        | 30秒でインストール；プロジェクトディレクトリでDroidインタラクティブセッションを開始；macOS/LinuxおよびWindowsをサポート | 既存のプロジェクトに迅速にアクセス、新しいツールは不要 | Windows インストール：`irm https://app.factory.ai/cli/windows | iex`；起動：`droid` |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------- |
+| クイックスタートとCLI        | 30秒でインストール；プロジェクトディレクトリでDroidインタラクティブセッションを開始；macOS/LinuxおよびWindowsをサポート | 既存のプロジェクトに迅速にアクセス、新しいツールは不要 | Windows インストール：`irm https://app.factory.ai/cli/windows \| iex`；起動：`droid` |
 | エンドツーエンドの機能開発   | 計画から実装、テストまでの全プロセスを自動化；透明なレビュープロセス                                                    | デリバリー速度を向上させ、人間の制御を維持             | ネイティブなdiff表示と承認プロセス（「透明性と制御」を参照）  |
 | コードベースの深い理解       | 組織のコードベース、ドキュメント、Issueトラッキングにおける共有知識を統合；コンテキスト認識、時間とともに効果が向上     | より正確な提案と変更                                   | リポジトリとドキュメントを横断する知識を継続的に活用          |
 | エンジニアリングシステム統合 | Jira、Notion、Slackなどのツールとネイティブ統合；開発作業とチームプロセスを同期                                         | ツール切り替えと情報サイロを削減                       | 「等」はさらに多くの統合があることを示します                  |
@@ -69,7 +41,9 @@ title: Factory Droid CLI
 公式ワンクリックインストールコマンド：
 
 <Callout type="info" title="ワンクリックインストールコマンド">
-  ` irm https://app.factory.ai/cli/windows | iex `
+  ```powershell
+  irm https://app.factory.ai/cli/windows | iex
+  ```
 </Callout>
 
 ![windows-install](/assets/factory_droid_cli/windows_install_droid.webp)
@@ -81,9 +55,9 @@ Droid CLIがサードパーティAPIを使用するには、設定ファイル�
 ![windows-configure.webp](/assets/factory_droid_cli/factory_cli_setup_windows.png)
 
 <Callout type="info" title="環境変数を変更">
-  ` iex (irm
-  'https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.ps1')
-  `
+  ```powershell
+  iex (irm 'https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.ps1')
+  ```
 </Callout>
 
 #### 4. Droid CLIの使用を開始
@@ -91,27 +65,42 @@ Droid CLIがサードパーティAPIを使用するには、設定ファイル�
 これでDroid CLIの使用を開始できます！
 
 <Callout type="info" title="Droid CLIを起動">
-  Droid CLIを直接起動: ` # 启动 Droid CLI droid ` 特定のプロジェクトで使用: ` #
-  プロジェクトディレクトリに移動 cd C:\path\to\your\project ` ` # 启动 Droid CLI
-  droid ` Enter でDroid CLIを起動
+  Droid CLIを直接起動：
+
+  ```bash
+  droid
+  ```
+
+  特定のプロジェクトで使用：
+
+  ```bash
+  # プロジェクトディレクトリに移動
+  cd C:\path\to\your\project
+
+  # Droid CLIを起動
+  droid
+  ```
+
+  Enter でDroid CLIを起動。
 </Callout>
 
 Droid CLIを使用するには、公式アカウント（無料）にログインする必要があります。
 
 #### 5. Windowsのよくある問題解決
 
-<Callout type="info" title="インストール時のプロンプト" collapsible>
-  「permission
-  denied」エラー。これは通常、権限の問題です。以下の解決策を試してください：
+<Callout type="info" title="インストール時に permission denied エラーが表示される">
+  これは通常、権限の問題です。以下の解決策を試してください：
+
+  - PowerShellを管理者として実行する
+  - または`npm`をユーザーディレクトリを使用するように設定する：`npm config set prefix %APPDATA%\npm`
 </Callout>
 
-    - `PowerShell`を管理者として実行する
+<Callout type="info" title="PowerShell実行ポリシーエラー">
+  実行ポリシーの制限に遭遇した場合は、以下を実行してください：
 
-    - または`npm`をユーザーディレクトリを使用するように設定する：`npm config set prefix %APPDATA%\npm`
-
-<Callout type="info" title="PowerShell実行ポリシーエラー" collapsible>
-  実行ポリシーの制限に遭遇した場合は、以下を実行してください： `
-  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser `
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  ```
 </Callout>
 
 ### macOS/Linux向け図解ガイド
@@ -119,8 +108,11 @@ Droid CLIを使用するには、公式アカウント（無料）にログイ�
 #### 1. Droid CLIをインストール
 
 <Callout type="info" title="Droid CLIをインストール">
-  ターミナルを開き、以下のコマンドを実行してください： ` curl -fsSL
-  https://app.factory.ai/cli | sh `
+  ターミナルを開き、以下のコマンドを実行してください：
+
+  ```bash
+  curl -fsSL https://app.factory.ai/cli | sh
+  ```
 </Callout>
 
 ![macos-open-terminal](/assets/factory_droid_cli/macos_install_droid.webp)
@@ -129,11 +121,13 @@ Droid CLIを使用するには、公式アカウント（無料）にログイ�
 
 インストールプロンプトに従って環境変数を変更してください（インストールプロンプトのコードを直接コピーしてください）：
 
-Linuxでは状況に応じて `~/.bashrc` または `~/.zshrc` を選択してください
+Linuxでは状況に応じて `~/.bashrc` または `~/.zshrc` を選択してください。
 
 <Callout type="info" title="Droid CLI 環境変数（例としてのみ）">
-  ` echo 'export PATH=/Users/ここを変更/.local/bin:$PATH' >> ~/.zshrc ` ` source
-  ~/.zshrc `
+  ```bash
+  echo 'export PATH=/Users/ここを変更/.local/bin:$PATH' >> ~/.zshrc
+  source ~/.zshrc
+  ```
 </Callout>
 
 #### 2. 設定ファイルを変更
@@ -141,9 +135,9 @@ Linuxでは状況に応じて `~/.bashrc` または `~/.zshrc` を選択して�
 Droid CLIがサードパーティAPIを使用するには、設定ファイルを変更する必要があります。
 
 <Callout type="info" title="ワンクリックで設定ファイルを変更">
-  ` curl -fsSL
-  https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.sh
-  | bash `
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/QuantumNous/new-api-docs/refs/heads/main/helper/factory-cli-setup.sh | bash
+  ```
 </Callout>
 
 ![macos-img-03.webp](/assets/factory_droid_cli/macos_configure.png)
@@ -153,9 +147,23 @@ Droid CLIがサードパーティAPIを使用するには、設定ファイル�
 これでDroid CLIの使用を開始できます！
 
 <Callout type="info" title="Droid CLIを起動">
-  Droid CLIを直接起動: ` # 启动 Droid CLI droid ` 特定のプロジェクトで使用: ` #
-  プロジェクトディレクトリに移動 cd /path/to/your/project ` ` # 启动 Droid CLI
-  droid ` Enter でDroid CLIを起動
+  Droid CLIを直接起動：
+
+  ```bash
+  droid
+  ```
+
+  特定のプロジェクトで使用：
+
+  ```bash
+  # プロジェクトディレクトリに移動
+  cd /path/to/your/project
+
+  # Droid CLIを起動
+  droid
+  ```
+
+  Enter でDroid CLIを起動。
 </Callout>
 
 > Droid CLIを使用するには、公式アカウント（無料）にログインする必要があります。
