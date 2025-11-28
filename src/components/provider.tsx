@@ -7,17 +7,15 @@ import Link from 'next/link';
 
 const bannerText: Record<string, { message: string; linkText: string }> = {
   en: {
-    message:
-      'API documentation is being upgraded. For non-relay API docs, please visit:',
+    message: 'API docs upgrading. For non-relay API docs, visit',
     linkText: 'docs.newapi.pro',
   },
   zh: {
-    message: 'API 文档正在升级，查看非中继接口文档请见：',
+    message: 'API 文档升级中，非中继接口文档请访问',
     linkText: 'docs.newapi.pro',
   },
   ja: {
-    message:
-      'APIドキュメントはアップグレード中です。非中継APIドキュメントはこちら：',
+    message: 'APIドキュメント更新中。非中継APIドキュメントは',
     linkText: 'docs.newapi.pro',
   },
 };
@@ -36,15 +34,17 @@ export function Provider({
   return (
     <RootProvider i18n={i18n}>
       <Banner id="api-docs-upgrade" variant="rainbow">
-        {text.message}&nbsp;
-        <Link
-          href="https://docs.newapi.pro/api/auth-system-description/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-fd-primary font-semibold underline underline-offset-2"
-        >
-          {text.linkText}
-        </Link>
+        <span className="text-center">
+          {text.message}{' '}
+          <Link
+            href="https://docs.newapi.pro/api/auth-system-description/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-fd-primary inline-flex font-semibold whitespace-nowrap underline underline-offset-2"
+          >
+            {text.linkText}
+          </Link>
+        </span>
       </Banner>
       {children}
     </RootProvider>
