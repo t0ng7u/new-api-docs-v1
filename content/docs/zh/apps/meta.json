@@ -11,6 +11,7 @@
     "factory-droid-cli",
     "fluent-read",
     "langbot",
-    "luna-translator"
+    "luna-translator",
+    "astrbot"
   ]
 }
