@@ -24,17 +24,23 @@ const footerContent: Record<
       {
         title: '关于我们',
         links: [
-          { label: '关于项目', href: 'docs/wiki/project-introduction' },
+          {
+            label: '关于项目',
+            href: 'docs/guide/wiki/basic-concepts/project-introduction',
+          },
           { label: '联系我们', href: 'docs/support/community-interaction' },
-          { label: '功能特性', href: 'docs/wiki/features-introduction' },
+          {
+            label: '功能特性',
+            href: 'docs/guide/wiki/basic-concepts/features-introduction',
+          },
         ],
       },
       {
         title: '文档',
         links: [
           { label: '安装部署', href: 'docs/installation' },
-          { label: '使用指南', href: 'docs/guide' },
-          { label: 'API 文档', href: 'docs/api' },
+          { label: '使用指南', href: 'docs/guide/home' },
+          { label: 'API 文档', href: 'docs/apis' },
         ],
       },
       {
@@ -130,21 +136,24 @@ const footerContent: Record<
         links: [
           {
             label: 'About Project',
-            href: 'docs/wiki/project-introduction',
+            href: 'docs/guide/wiki/basic-concepts/project-introduction',
           },
           {
             label: 'Contact Us',
             href: 'docs/support/community-interaction',
           },
-          { label: 'Features', href: 'docs/wiki/features-introduction' },
+          {
+            label: 'Features',
+            href: 'docs/guide/wiki/basic-concepts/features-introduction',
+          },
         ],
       },
       {
         title: 'Docs',
         links: [
           { label: 'Installation', href: 'docs/installation' },
-          { label: 'User Guide', href: 'docs/guide' },
-          { label: 'API Docs', href: 'docs/api' },
+          { label: 'User Guide', href: 'docs/guide/home' },
+          { label: 'API Docs', href: 'docs/apis' },
         ],
       },
       {
@@ -240,21 +249,24 @@ const footerContent: Record<
         links: [
           {
             label: 'プロジェクトについて',
-            href: 'docs/wiki/project-introduction',
+            href: 'docs/guide/wiki/basic-concepts/project-introduction',
           },
           {
             label: 'お問い合わせ',
             href: 'docs/support/community-interaction',
           },
-          { label: '機能', href: 'docs/wiki/features-introduction' },
+          {
+            label: '機能',
+            href: 'docs/guide/wiki/basic-concepts/features-introduction',
+          },
         ],
       },
       {
         title: 'ドキュメント',
         links: [
           { label: 'インストール', href: 'docs/installation' },
-          { label: 'ユーザーガイド', href: 'docs/guide' },
-          { label: 'APIドキュメント', href: 'docs/api' },
+          { label: 'ユーザーガイド', href: 'docs/guide/home' },
+          { label: 'APIドキュメント', href: 'docs/apis' },
         ],
       },
       {

@@ -1,0 +1,114 @@
+---
+title: APIドキュメント
+description: 完全なインターフェースドキュメントとAPIリファレンス
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import {
+  MessageSquare,
+  Image,
+  Music,
+  Video,
+  Mic,
+  Search,
+  Database,
+  Code,
+  RefreshCw,
+} from 'lucide-react';
+
+## 概要
+
+New API は豊富な API インターフェースを提供し、さまざまな主流大規模モデルサービスへの統一アクセスをサポートしています。このドキュメントでは、利用可能なすべてのインターフェースタイプと詳細な呼び出し方法について説明します。
+
+## 中継API
+
+統一されたインターフェース形式で様々な AI サービスにアクセスします。
+
+<Cards>
+  <Card
+    icon={<MessageSquare />}
+    title="チャット補完"
+    description="OpenAI、Anthropic、Google Gemini、DeepSeek などの主流チャットモデルをサポート。"
+    href="/ja/docs/apis/relay-apis/chat/openai-chat"
+  />
+  <Card
+    icon={<Search />}
+    title="埋め込み"
+    description="テキスト埋め込みベクトル生成、複数の埋め込みモデルをサポート。"
+    href="/ja/docs/apis/relay-apis/embeddings/openai-embedding"
+  />
+  <Card
+    icon={<RefreshCw />}
+    title="リランキング"
+    description="Cohere、Jina AI、Xinference などのリランキングモデルをサポート。"
+    href="/ja/docs/apis/relay-apis/rerank/jinaai-rerank"
+  />
+  <Card
+    icon={<Mic />}
+    title="リアルタイム"
+    description="OpenAI Realtime API サポート。"
+    href="/ja/docs/apis/relay-apis/realtime/openai-realtime"
+  />
+  <Card
+    icon={<Image />}
+    title="画像生成"
+    description="DALL-E、Midjourney などの画像生成モデルをサポート。"
+    href="/ja/docs/apis/relay-apis/image/openai-image"
+  />
+  <Card
+    icon={<Mic />}
+    title="音声サービス"
+    description="音声からテキスト、テキストから音声などの音声処理機能。"
+    href="/ja/docs/apis/relay-apis/audio/openai-audio"
+  />
+  <Card
+    icon={<Music />}
+    title="音楽生成"
+    description="Suno AI 音楽生成サービス。"
+    href="/ja/docs/apis/relay-apis/music/suno-music"
+  />
+  <Card
+    icon={<Video />}
+    title="動画生成"
+    description="Kling、即夢などの動画生成モデルをサポート。"
+    href="/ja/docs/apis/relay-apis/video/kling-jimeng"
+  />
+</Cards>
+
+## クエリAPI
+
+アカウントと使用状況に関する情報を取得します。
+
+<Cards>
+  <Card
+    icon={<Database />}
+    title="トークン使用量クエリ"
+    description="APIトークンの使用量とクォータ情報をクエリします。"
+    href="/ja/docs/apis/query-apis/token-usage"
+  />
+</Cards>
+
+## フロントエンドAPI
+
+フロントエンドアプリケーション開発用のインターフェース。
+
+<Cards>
+  <Card
+    icon={<Code />}
+    title="認証システム説明"
+    description="New API の認証・認可メカニズムを理解します。"
+    href="/ja/docs/apis/frontend-apis/auth-system-description"
+  />
+  <Card
+    icon={<Code />}
+    title="利用可能モデルリスト取得"
+    description="現在利用可能なモデルのリストを取得します。"
+    href="/ja/docs/apis/frontend-apis/get-available-models-list"
+  />
+  <Card
+    icon={<Code />}
+    title="モジュール開発ガイド"
+    description="フロントエンドモジュール開発の詳細ガイドと例。"
+    href="/ja/docs/apis/frontend-apis/module-guide/fei-system-initialization"
+  />
+</Cards>

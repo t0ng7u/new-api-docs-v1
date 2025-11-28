@@ -4,13 +4,10 @@ description: お客様のニーズに最適なデプロイ方法を選択して�
 ---
 
 import {
-  BookOpen,
   Server,
   Network,
   Code2,
-  Users,
   Headphones,
-  List,
   Bot,
   Handshake,
   Container,
@@ -26,37 +23,37 @@ import {
     icon={<Boxes />}
     title="Docker Compose デプロイ"
     description="Docker Compose を使用して複数のサービスをオーケストレーションします。本番環境や MySQL、Redis などの依存関係が必要なシナリオに適しています。"
-    href="/ja/docs/installation/docker-compose-installation"
+    href="/ja/docs/installation/deployment-methods/docker-compose-installation"
   />
   <Card
     icon={<Container />}
     title="Docker 単一コンテナデプロイ"
     description="Docker イメージを使用して New API を迅速にデプロイします。個人利用や小規模なアプリケーションシナリオに適しています。"
-    href="/ja/docs/installation/docker-installation"
+    href="/ja/docs/installation/deployment-methods/docker-installation"
   />
   <Card
     icon={<Server />}
     title="1Panel パネルデプロイ"
     description="1Panel パネルのグラフィカルインターフェースを通じて迅速にデプロイします。コマンドラインに不慣れなユーザーに適しています。"
-    href="/ja/docs/installation/1panel-installation"
+    href="/ja/docs/installation/deployment-methods/1panel-installation"
   />
   <Card
     icon={<Server />}
     title="宝塔パネルデプロイ"
     description="宝塔パネルのグラフィカルインターフェースを通じて迅速にデプロイします。コマンドラインに不慣れなユーザーに適しています。"
-    href="/ja/docs/installation/bt-docker-installation"
+    href="/ja/docs/installation/deployment-methods/bt-docker-installation"
   />
   <Card
     icon={<Network />}
     title="クラスターデプロイモード"
     description="マルチノード分散デプロイにより、高可用性、ロードバランシング、水平スケーリングを実現します。大規模なアプリケーションやエンタープライズシナリオに適しています。"
-    href="/ja/docs/installation/cluster-deployment"
+    href="/ja/docs/installation/deployment-methods/cluster-deployment"
   />
   <Card
     icon={<Code2 />}
     title="ローカル開発デプロイ"
     description="開発者によるコード貢献やカスタム開発に適しており、完全なローカル開発環境設定ガイドを提供します。"
-    href="/ja/docs/installation/local-development"
+    href="/ja/docs/installation/deployment-methods/local-development"
   />
 </Cards>
 
@@ -66,45 +63,27 @@ New API の強力な機能を最大限に活用するための包括的なガイ
 
 <Cards>
   <Card
-    icon={<BookOpen />}
-    title="プロジェクト紹介"
-    description="プロジェクトの紹介、機能説明、技術アーキテクチャ、ロードマップについて学びます。"
-    href="/ja/docs/wiki/project-introduction"
-  />
-  <Card
-    icon={<Users />}
-    title="ユーザーガイド"
-    description="詳細な使用説明とベストプラクティス。"
-    href="/ja/docs/guide/home"
-  />
-  <Card
     icon={<Code2 />}
     title="APIドキュメント"
     description="包括的なAPIインターフェースの説明と呼び出し例。"
-    href="/ja/docs/api"
-  />
-  <Card
-    icon={<Headphones />}
-    title="ヘルプ＆サポート"
-    description="よくある質問とコミュニティ交流。"
-    href="/ja/docs/support/faq"
-  />
-  <Card
-    icon={<List />}
-    title="利用ガイド"
-    description="クイックスタートガイドと詳細な手順説明。"
-    href="/ja/docs/guide/console"
+    href="/ja/docs/apis"
   />
   <Card
     icon={<Bot />}
     title="AIアプリケーション"
     description="New API をベースに開発された様々なAIアプリケーションの例を探ります。"
-    href="/ja/docs/apps/cherry-studio"
+    href="/ja/docs/apps"
+  />
+  <Card
+    icon={<Headphones />}
+    title="ヘルプ＆サポート"
+    description="よくある質問とコミュニティ交流。"
+    href="/ja/docs/support"
   />
   <Card
     icon={<Handshake />}
     title="ビジネス提携"
     description="私たちと提携し、AIエコシステムとビジネスチャンスを共に開拓しましょう。"
-    href="/ja/docs/business-cooperation"
+    href="/ja/docs/business"
   />
 </Cards>

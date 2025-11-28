@@ -1,0 +1,114 @@
+---
+title: API Documentation
+description: Complete interface documentation and API reference
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import {
+  MessageSquare,
+  Image,
+  Music,
+  Video,
+  Mic,
+  Search,
+  Database,
+  Code,
+  RefreshCw,
+} from 'lucide-react';
+
+## Overview
+
+New API provides a rich set of API interfaces, supporting unified access to various mainstream large model services. This documentation covers all available interface types and detailed calling instructions.
+
+## Relay APIs
+
+Access various AI services through a unified interface format.
+
+<Cards>
+  <Card
+    icon={<MessageSquare />}
+    title="Chat Completions"
+    description="Support for OpenAI, Anthropic, Google Gemini, DeepSeek and other mainstream chat models."
+    href="/en/docs/apis/relay-apis/chat/openai-chat"
+  />
+  <Card
+    icon={<Search />}
+    title="Embeddings"
+    description="Text embedding vector generation, supporting multiple embedding models."
+    href="/en/docs/apis/relay-apis/embeddings/openai-embedding"
+  />
+  <Card
+    icon={<RefreshCw />}
+    title="Rerank"
+    description="Support for Cohere, Jina AI, Xinference and other reranking models."
+    href="/en/docs/apis/relay-apis/rerank/jinaai-rerank"
+  />
+  <Card
+    icon={<Mic />}
+    title="Realtime"
+    description="OpenAI Realtime API support."
+    href="/en/docs/apis/relay-apis/realtime/openai-realtime"
+  />
+  <Card
+    icon={<Image />}
+    title="Image Generation"
+    description="Support for DALL-E, Midjourney and other image generation models."
+    href="/en/docs/apis/relay-apis/image/openai-image"
+  />
+  <Card
+    icon={<Mic />}
+    title="Audio Services"
+    description="Speech-to-text, text-to-speech and other audio processing capabilities."
+    href="/en/docs/apis/relay-apis/audio/openai-audio"
+  />
+  <Card
+    icon={<Music />}
+    title="Music Generation"
+    description="Suno AI music generation service."
+    href="/en/docs/apis/relay-apis/music/suno-music"
+  />
+  <Card
+    icon={<Video />}
+    title="Video Generation"
+    description="Support for Kling, Jimeng and other video generation models."
+    href="/en/docs/apis/relay-apis/video/kling-jimeng"
+  />
+</Cards>
+
+## Query APIs
+
+Get account and usage related information.
+
+<Cards>
+  <Card
+    icon={<Database />}
+    title="Token Usage Query"
+    description="Query API token usage and quota information."
+    href="/en/docs/apis/query-apis/token-usage"
+  />
+</Cards>
+
+## Frontend APIs
+
+Interfaces for frontend application development.
+
+<Cards>
+  <Card
+    icon={<Code />}
+    title="Auth System Description"
+    description="Understand New API's authentication and authorization mechanism."
+    href="/en/docs/apis/frontend-apis/auth-system-description"
+  />
+  <Card
+    icon={<Code />}
+    title="Get Available Models List"
+    description="Get the list of currently available models."
+    href="/en/docs/apis/frontend-apis/get-available-models-list"
+  />
+  <Card
+    icon={<Code />}
+    title="Module Development Guide"
+    description="Detailed guide and examples for frontend module development."
+    href="/en/docs/apis/frontend-apis/module-guide/fei-system-initialization"
+  />
+</Cards>

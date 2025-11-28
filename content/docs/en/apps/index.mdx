@@ -1,0 +1,75 @@
+---
+title: AI Applications
+description: Supported AI applications and integration solutions
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import {
+  Cherry,
+  Terminal,
+  BookOpen,
+  MessageCircle,
+  Languages,
+  Bot,
+} from 'lucide-react';
+
+## Overview
+
+New API is compatible with many popular AI applications and tools. Below is a list of verified supported applications and configuration guides.
+
+## Supported Applications
+
+<Cards>
+  <Card
+    icon={<Cherry />}
+    title="Cherry Studio"
+    description="A powerful AI assistant client supporting multi-model conversations."
+    href="/en/docs/apps/cherry-studio"
+  />
+  <Card
+    icon={<Terminal />}
+    title="Claude Code"
+    description="Anthropic Claude powered code editor integration."
+    href="/en/docs/apps/claude-code"
+  />
+  <Card
+    icon={<Terminal />}
+    title="Codex CLI"
+    description="Command-line interface AI code assistant tool."
+    href="/en/docs/apps/codex-cli"
+  />
+  <Card
+    icon={<Bot />}
+    title="Factory Droid CLI"
+    description="AI agent tool for automated workflows."
+    href="/en/docs/apps/factory-droid-cli"
+  />
+  <Card
+    icon={<BookOpen />}
+    title="Fluent Read"
+    description="AI-powered intelligent reading and translation assistant."
+    href="/en/docs/apps/fluent-read"
+  />
+  <Card
+    icon={<MessageCircle />}
+    title="LangBot"
+    description="Chatbot framework based on large language models."
+    href="/en/docs/apps/langbot"
+  />
+  <Card
+    icon={<Languages />}
+    title="Luna Translator"
+    description="Real-time translation tool for games and documents."
+    href="/en/docs/apps/luna-translator"
+  />
+</Cards>
+
+## Integration Guide
+
+Most applications only need to configure the following information to connect to New API:
+
+1. **API URL**: Your New API service address
+2. **API Key**: Token generated in the New API console
+3. **Model Name**: Select the model you want to use
+
+Please refer to each application's detailed documentation for specific configuration steps.

@@ -4,6 +4,7 @@
   "icon": "Wrench",
   "root": true,
   "pages": [
+    "index",
     "---安装部署---",
     "deployment-methods/docker-compose-installation",
     "deployment-methods/docker-installation",

@@ -4,6 +4,7 @@
   "icon": "Sparkles",
   "root": true,
   "pages": [
+    "index",
     "cherry-studio",
     "claude-code",
     "codex-cli",

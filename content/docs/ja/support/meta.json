@@ -4,6 +4,7 @@
   "icon": "Headset",
   "root": true,
   "pages": [
+    "index",
     "faq",
     "community-interaction",
     "feedback-issues",

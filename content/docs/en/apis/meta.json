@@ -4,6 +4,7 @@
   "icon": "Code",
   "root": true,
   "pages": [
+    "index",
     "---Relay APIs---",
     "relay-apis/chat",
     "relay-apis/embeddings",

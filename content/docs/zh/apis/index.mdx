@@ -1,0 +1,114 @@
+---
+title: API 文档
+description: 完整的接口文档和 API 参考
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import {
+  MessageSquare,
+  Image,
+  Music,
+  Video,
+  Mic,
+  Search,
+  Database,
+  Code,
+  RefreshCw,
+} from 'lucide-react';
+
+## 概述
+
+New API 提供了丰富的 API 接口，支持多种主流大模型服务的统一接入。本文档涵盖了所有可用的接口类型和详细的调用说明。
+
+## 中继接口
+
+通过统一的接口格式访问各类 AI 服务。
+
+<Cards>
+  <Card
+    icon={<MessageSquare />}
+    title="对话补全"
+    description="支持 OpenAI、Anthropic、Google Gemini、DeepSeek 等主流对话模型。"
+    href="/zh/docs/apis/relay-apis/chat/openai-chat"
+  />
+  <Card
+    icon={<Search />}
+    title="向量嵌入"
+    description="文本嵌入向量生成，支持多种嵌入模型。"
+    href="/zh/docs/apis/relay-apis/embeddings/openai-embedding"
+  />
+  <Card
+    icon={<RefreshCw />}
+    title="重排序"
+    description="支持 Cohere、Jina AI、Xinference 等重排序模型。"
+    href="/zh/docs/apis/relay-apis/rerank/jinaai-rerank"
+  />
+  <Card
+    icon={<Mic />}
+    title="实时对话"
+    description="OpenAI Realtime API 支持。"
+    href="/zh/docs/apis/relay-apis/realtime/openai-realtime"
+  />
+  <Card
+    icon={<Image />}
+    title="图像生成"
+    description="支持 DALL-E、Midjourney 等图像生成模型。"
+    href="/zh/docs/apis/relay-apis/image/openai-image"
+  />
+  <Card
+    icon={<Mic />}
+    title="语音服务"
+    description="语音转文字、文字转语音等音频处理能力。"
+    href="/zh/docs/apis/relay-apis/audio/openai-audio"
+  />
+  <Card
+    icon={<Music />}
+    title="音乐生成"
+    description="Suno AI 音乐生成服务。"
+    href="/zh/docs/apis/relay-apis/music/suno-music"
+  />
+  <Card
+    icon={<Video />}
+    title="视频生成"
+    description="支持 Kling、即梦等视频生成模型。"
+    href="/zh/docs/apis/relay-apis/video/kling-jimeng"
+  />
+</Cards>
+
+## 查询接口
+
+获取账户和使用情况相关信息。
+
+<Cards>
+  <Card
+    icon={<Database />}
+    title="令牌用量查询"
+    description="查询 API 令牌的使用量和配额信息。"
+    href="/zh/docs/apis/query-apis/token-usage"
+  />
+</Cards>
+
+## 前端接口
+
+用于前端应用开发的相关接口。
+
+<Cards>
+  <Card
+    icon={<Code />}
+    title="鉴权系统说明"
+    description="了解 New API 的认证和授权机制。"
+    href="/zh/docs/apis/frontend-apis/auth-system-description"
+  />
+  <Card
+    icon={<Code />}
+    title="获取可用模型列表"
+    description="获取当前可用的模型列表信息。"
+    href="/zh/docs/apis/frontend-apis/get-available-models-list"
+  />
+  <Card
+    icon={<Code />}
+    title="模块开发指南"
+    description="前端模块开发的详细指南和示例。"
+    href="/zh/docs/apis/frontend-apis/module-guide/fei-system-initialization"
+  />
+</Cards>
