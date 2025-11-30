@@ -2,7 +2,8 @@ import { source } from '@/lib/source';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { baseOptions, linkItems } from '@/lib/layout.shared';
 import { Footer } from '@/components/footer';
-import { AISearchTrigger } from '@/components/search';
+// AI 功能暂时禁用
+// import { AISearchTrigger } from '@/components/search';
 import 'katex/dist/katex.min.css';
 
 export default async function Layout({
@@ -41,7 +42,8 @@ export default async function Layout({
     >
       {children}
       <Footer lang={lang} />
-      <AISearchTrigger />
+      {/* AI 功能暂时禁用 */}
+      {/* <AISearchTrigger /> */}
     </DocsLayout>
   );
 }
