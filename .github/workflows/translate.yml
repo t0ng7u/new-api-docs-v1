@@ -61,27 +61,29 @@ jobs:
 
           echo "📋 翻译模式: $MODE"
 
+          # 创建临时文件存储文件列表（避免路径中特殊字符问题）
+          FILES_LIST=$(mktemp)
+
           if [ "$MODE" = "force_all" ]; then
             # 强制翻译所有文档
             echo "📚 获取所有中文文档文件..."
-            CHANGED_FILES=$(find content/docs/zh -name "*.md" -o -name "*.mdx" | tr '\n' ' ')
+            find content/docs/zh -name "*.md" -o -name "*.mdx" > "$FILES_LIST"
             
           elif [ "$MODE" = "missing_only" ]; then
             # 只翻译缺失的文档
             echo "🔍 检测缺失的翻译文件..."
-            CHANGED_FILES=""
             
-            # 遍历所有中文文档
-            for zh_file in $(find content/docs/zh -name "*.md" -o -name "*.mdx"); do
+            # 遍历所有中文文档（使用 -print0 和 read 处理特殊字符）
+            while IFS= read -r -d '' zh_file; do
               # 计算相对路径
-              rel_path=${zh_file#content/docs/zh/}
+              rel_path="${zh_file#content/docs/zh/}"
               
               # 检查英文和日文翻译是否存在
               en_file="content/docs/en/$rel_path"
               ja_file="content/docs/ja/$rel_path"
               
               if [ ! -f "$en_file" ] || [ ! -f "$ja_file" ]; then
-                CHANGED_FILES="$CHANGED_FILES $zh_file"
+                echo "$zh_file" >> "$FILES_LIST"
                 if [ ! -f "$en_file" ]; then
                   echo "  ❌ 缺失英文翻译: $en_file"
                 fi
@@ -89,28 +91,28 @@ jobs:
                   echo "  ❌ 缺失日文翻译: $ja_file"
                 fi
               fi
-            done
+            done < <(find content/docs/zh \( -name "*.md" -o -name "*.mdx" \) -print0)
             
           else
             # 正常模式：检测变更和缺失
             echo "📝 检测变更和缺失的翻译..."
             
             # 1. 获取变更的中文文档
-            ZH_CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -E '^content/docs/zh/.*\.(md|mdx)$' || echo "")
+            git diff --name-only HEAD~1 HEAD | grep -E '^content/docs/zh/.*\.(md|mdx)$' >> "$FILES_LIST" || true
             
             # 2. 获取被删除的翻译文件对应的中文源文件
             DELETED_TRANSLATIONS=$(git diff --name-only HEAD~1 HEAD | grep -E '^content/docs/(en|ja)/.*\.(md|mdx)$' || echo "")
-            ZH_FROM_DELETED=""
             
             if [ ! -z "$DELETED_TRANSLATIONS" ]; then
               echo "🗑️ 检测到翻译文件被删除:"
-              for trans_file in $DELETED_TRANSLATIONS; do
+              echo "$DELETED_TRANSLATIONS" | while IFS= read -r trans_file; do
+                [ -z "$trans_file" ] && continue
                 echo "  - $trans_file"
                 # 提取相对路径
-                if [[ $trans_file == content/docs/en/* ]]; then
-                  rel_path=${trans_file#content/docs/en/}
-                elif [[ $trans_file == content/docs/ja/* ]]; then
-                  rel_path=${trans_file#content/docs/ja/}
+                if [[ "$trans_file" == content/docs/en/* ]]; then
+                  rel_path="${trans_file#content/docs/en/}"
+                elif [[ "$trans_file" == content/docs/ja/* ]]; then
+                  rel_path="${trans_file#content/docs/ja/}"
                 fi
                 
                 # 构建对应的中文源文件路径
@@ -118,25 +120,28 @@ jobs:
                 
                 # 如果中文源文件存在，添加到待翻译列表
                 if [ -f "$zh_file" ]; then
-                  ZH_FROM_DELETED="$ZH_FROM_DELETED $zh_file"
+                  echo "$zh_file" >> "$FILES_LIST"
                   echo "  ✓ 找到对应的中文源文件: $zh_file"
                 fi
               done
             fi
             
-            # 合并两个列表并去重
-            CHANGED_FILES=$(echo "$ZH_CHANGED $ZH_FROM_DELETED" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+            # 去重
+            sort -u "$FILES_LIST" -o "$FILES_LIST"
           fi
 
-          if [ -z "$CHANGED_FILES" ]; then
+          # 检查是否有文件需要翻译
+          if [ ! -s "$FILES_LIST" ]; then
             echo "✅ 没有需要翻译的文档文件"
             echo "has_changes=false" >> $GITHUB_OUTPUT
+            rm -f "$FILES_LIST"
           else
             echo "📊 待翻译文件:"
-            echo "$CHANGED_FILES" | tr ' ' '\n'
+            cat "$FILES_LIST"
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            # 将文件列表保存为单行，用空格分隔
-            echo "files=$(echo $CHANGED_FILES | tr '\n' ' ')" >> $GITHUB_OUTPUT
+            # 保存文件列表路径供后续步骤使用
+            cp "$FILES_LIST" /tmp/translate_files.txt
+            rm -f "$FILES_LIST"
           fi
 
       - name: 🌐 Translate documents
@@ -145,15 +150,16 @@ jobs:
           MODE="${{ github.event.inputs.mode }}"
           IS_PUSH="${{ github.event_name == 'push' }}"
 
+          # 读取文件列表并用 xargs 正确处理特殊字符
           if [ "$MODE" = "force_all" ]; then
             echo "🔄 强制重新翻译所有文件..."
-            FORCE_TRANSLATE=true bun run translate ${{ steps.changed-files.outputs.files }}
+            FORCE_TRANSLATE=true xargs -d '\n' bun run translate < /tmp/translate_files.txt
           elif [ "$IS_PUSH" = "true" ]; then
             echo "🌐 翻译文件（push 触发，强制模式）..."
-            FORCE_TRANSLATE=true bun run translate ${{ steps.changed-files.outputs.files }}
+            FORCE_TRANSLATE=true xargs -d '\n' bun run translate < /tmp/translate_files.txt
           else
             echo "🌐 翻译文件..."
-            bun run translate ${{ steps.changed-files.outputs.files }}
+            xargs -d '\n' bun run translate < /tmp/translate_files.txt
           fi
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -172,9 +178,6 @@ jobs:
           commit-message: |
             🌐 docs: auto-translate documents
 
-            Automatically translated the following files:
-            ${{ steps.changed-files.outputs.files }}
-
             Generated by GitHub Actions workflow
           branch: auto-translate-${{ github.run_id }}
           delete-branch: true
@@ -186,10 +189,7 @@ jobs:
             **Mode**: ${{ github.event.inputs.mode || 'changed' }}  
             **Workflow**: [#${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            ### 📁 Translated Files
-            ```
-            ${{ steps.changed-files.outputs.files }}
-            ```
+            See workflow run for translated files list.
           labels: |
             documentation
             auto-translation
@@ -203,7 +203,9 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**Changed files:**" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-            echo "${{ steps.changed-files.outputs.files }}" | tr ' ' '\n' >> $GITHUB_STEP_SUMMARY
+            if [ -f /tmp/translate_files.txt ]; then
+              cat /tmp/translate_files.txt >> $GITHUB_STEP_SUMMARY
+            fi
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "✅ Translation completed successfully!" >> $GITHUB_STEP_SUMMARY
