@@ -7,14 +7,14 @@
 @theme {
   --spacing-fd-container: 1436px;
 
-  /* 粉色主题色 */
+  /* Pink theme color */
   --color-brand: hsl(330, 70%, 55%);
   --color-brand-foreground: white;
   --color-brand-secondary: hsl(340, 75%, 65%);
   --color-brand-secondary-foreground: hsl(330, 60%, 20%);
   --color-brand-200: hsl(330, 65%, 75%);
 
-  /* Fumadocs UI 主题色 (用于导航、TOC等) */
+  /* Fumadocs UI theme color (for navigation, TOC, etc.) */
   --color-fd-primary: hsl(330, 70%, 55%);
   --color-fd-primary-foreground: white;
 
@@ -34,14 +34,14 @@
   --color-landing-foreground: #f5e0ea;
   --color-landing-foreground-200: #e0b8d0;
 
-  /* 粉色主题色 (暗模式) */
+  /* Pink theme color (dark mode) */
   --color-brand: hsl(330, 85%, 70%);
   --color-brand-secondary: hsl(340, 80%, 75%);
   --color-brand-secondary-foreground: hsl(330, 60%, 10%);
   --color-brand-foreground: black;
   --color-brand-200: hsl(330, 80%, 85%);
 
-  /* Fumadocs UI 主题色 (用于导航、TOC等 - 暗模式) */
+  /* Fumadocs UI theme color (for navigation, TOC, etc. - dark mode) */
   --color-fd-primary: hsl(330, 85%, 70%);
   --color-fd-primary-foreground: black;
 }
@@ -58,7 +58,7 @@ body {
     'calt' 1;
 }
 
-/* 首页卡片增强样式 */
+/* Homepage card enhanced styles */
 [data-card] {
   transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
   position: relative;
@@ -71,7 +71,7 @@ body {
   border-color: var(--color-brand);
 }
 
-/* 卡片图标容器增强 */
+/* Card icon container enhancement */
 [data-card] > div:first-child {
   transition: all 0.3s ease;
 }
@@ -82,7 +82,7 @@ body {
   color: var(--color-brand-foreground);
 }
 
-/* Cards 网格布局优化 */
+/* Cards grid layout optimization */
 .prose
   :where([data-card]):not(
     :where([class~='not-prose'], [class~='not-prose'] *)

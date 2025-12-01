@@ -10,7 +10,7 @@ export const source = loader({
   source: docs.toFumadocsSource(),
   plugins: [
     lucideIconsPlugin(),
-    openapiPlugin(), // 为页面树中的 API 页面添加徽章
+    openapiPlugin(), // Add badges to API pages in the page tree
   ],
 });
 

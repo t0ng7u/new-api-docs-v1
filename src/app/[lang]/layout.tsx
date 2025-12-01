@@ -128,7 +128,7 @@ export default async function RootLayout({
 }) {
   const lang = (await params).lang;
 
-  // 检查语言是否有效，防止无效语言代码（如 'api'）导致错误
+  // Check if the language is valid, prevent invalid language codes (e.g. 'api') from causing errors
   if (!i18n.languages.includes(lang as (typeof i18n.languages)[number])) {
     notFound();
   }

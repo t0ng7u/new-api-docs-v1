@@ -2,7 +2,7 @@ import { source } from '@/lib/source';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { baseOptions, linkItems } from '@/lib/layout.shared';
 import { Footer } from '@/components/footer';
-// AI 功能暂时禁用
+// AI feature temporarily disabled
 // import { AISearchTrigger } from '@/components/search';
 import 'katex/dist/katex.min.css';
 import { notFound } from 'next/navigation';
@@ -17,7 +17,7 @@ export default async function Layout({
 }) {
   const { lang } = await params;
 
-  // 检查语言是否有效，防止无效语言代码（如 'api'）导致错误
+  // Check if the language is valid, prevent invalid language codes (e.g. 'api') from causing errors
   if (!i18n.languages.includes(lang as (typeof i18n.languages)[number])) {
     notFound();
   }
@@ -50,7 +50,7 @@ export default async function Layout({
     >
       {children}
       <Footer lang={lang} />
-      {/* AI 功能暂时禁用 */}
+      {/* AI feature temporarily disabled */}
       {/* <AISearchTrigger /> */}
     </DocsLayout>
   );

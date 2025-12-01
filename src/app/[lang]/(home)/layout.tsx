@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { getLocalePath } from '@/lib/i18n';
 
-// 导航项配置
+// Navigation items configuration
 const NAV_ITEMS = [
   { key: 'start', icon: Rocket, path: '' },
   { key: 'install', icon: Download, path: '/installation' },
@@ -30,7 +30,7 @@ const NAV_ITEMS = [
   { key: 'apps', icon: Sparkles, path: '/apps' },
 ] as const;
 
-// 多语言文本
+// Internationalization text
 const i18nText: Record<
   string,
   Record<string, { text: string; desc: string }>
@@ -88,10 +88,10 @@ const i18nText: Record<
   },
 };
 
-// 获取本地化文本
+// Get localized text
 const getTexts = (lang: string) => i18nText[lang] || i18nText.en;
 
-// 生成导航项
+// Build navigation items
 const buildNavItems = (lang: string, docsUrl: string) => {
   const texts = getTexts(lang);
   return NAV_ITEMS.map(({ key, icon: Icon, path }) => ({
@@ -102,7 +102,7 @@ const buildNavItems = (lang: string, docsUrl: string) => {
   }));
 };
 
-// 菜单链接项组件
+// Menu link item component
 function MenuLinkItem({
   item,
   className,
@@ -137,7 +137,7 @@ export default async function Layout({
       <HomeLayout
         {...baseOptions(lang)}
         links={[
-          // 移动端菜单
+          // Mobile menu
           {
             type: 'menu',
             on: 'menu',
@@ -156,7 +156,7 @@ export default async function Layout({
             icon: <FileCode />,
             external: true,
           },
-          // 桌面端导航
+          // Desktop navigation
           {
             type: 'custom',
             on: 'nav',
@@ -166,7 +166,7 @@ export default async function Layout({
                   <Link href={docsUrl}>{texts.title.text}</Link>
                 </NavbarMenuTrigger>
                 <NavbarMenuContent className="text-[15px]">
-                  {/* 首项带预览图 */}
+                  {/* First item with preview image */}
                   <NavbarMenuLink href={docsUrl} className="md:row-span-2">
                     <div className="-mx-3 -mt-3">
                       <Image
@@ -184,10 +184,10 @@ export default async function Layout({
                       {navItems[0].desc}
                     </p>
                   </NavbarMenuLink>
-                  {/* 第二列 */}
+                  {/* Second column */}
                   <MenuLinkItem item={navItems[1]} className="lg:col-start-2" />
                   <MenuLinkItem item={navItems[2]} className="lg:col-start-2" />
-                  {/* 第三列 */}
+                  {/* Third column */}
                   <MenuLinkItem
                     item={navItems[3]}
                     className="lg:col-start-3 lg:row-start-1"

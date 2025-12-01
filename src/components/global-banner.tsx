@@ -5,19 +5,19 @@ import Link from 'next/link';
 import type { ComponentProps } from 'react';
 
 // ============================================
-// Banner 配置 - 修改这里即可更新 banner 内容
+// Banner configuration - modify here to update banner content
 // ============================================
 const BANNER_CONFIG = {
-  // banner 唯一标识，用于记住用户是否关闭过
+  // Banner unique identifier, used to remember if user has closed it
   id: 'docs-renewal-notice',
 
-  // banner 样式: 'rainbow' | 'normal'
+  // Banner style: 'rainbow' | 'normal'
   variant: 'rainbow' as const,
 
-  // 链接地址
+  // Link URL
   linkUrl: 'https://doc.newapi.pro',
 
-  // 多语言文本配置
+  // Multi-language text configuration
   text: {
     en: {
       message: 'Documentation renewed! For old docs, visit',
