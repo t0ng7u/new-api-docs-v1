@@ -1,0 +1,5 @@
+{
+  "title": "OpenAI 格式 (Responses)",
+  "description": "OpenAI Responses 兼容接口",
+  "pages": ["createResponse"]
+}

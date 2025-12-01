@@ -1,0 +1,5 @@
+{
+  "title": "OpenAI 音频 (Audio)",
+  "description": "音频处理相关接口",
+  "pages": ["createSpeech", "createTranscription", "createTranslation"]
+}

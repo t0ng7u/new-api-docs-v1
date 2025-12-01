@@ -1,0 +1,5 @@
+{
+  "title": "即梦格式",
+  "description": "即梦视频生成接口",
+  "pages": ["createJimengVideo"]
+}

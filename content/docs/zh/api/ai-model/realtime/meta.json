@@ -1,0 +1,5 @@
+{
+  "title": "实时对话 (Realtime)",
+  "description": "实时语音对话接口",
+  "pages": ["createRealtimeSession"]
+}
