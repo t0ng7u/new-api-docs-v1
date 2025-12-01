@@ -1,0 +1,5 @@
+{
+  "title": "OpenAI 格式 (Chat)",
+  "description": "OpenAI Chat Completions 兼容接口",
+  "pages": ["createChatCompletion"]
+}

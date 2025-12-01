@@ -1,0 +1,5 @@
+{
+  "title": "内容审核 (Moderations)",
+  "description": "内容审核接口",
+  "pages": ["createModeration"]
+}

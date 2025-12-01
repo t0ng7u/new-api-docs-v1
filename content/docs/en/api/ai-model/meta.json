@@ -1,0 +1,26 @@
+{
+  "title": "AI Model API",
+  "description": "AI model related API endpoints",
+  "icon": "Brain",
+  "pages": [
+    "获取模型列表",
+    "---Chat Completions---",
+    "openai格式(chat)",
+    "claude格式(messages)",
+    "gemini格式",
+    "openai格式(responses)",
+    "---Text Processing---",
+    "文本补全(completions)",
+    "openai格式(embeddings)",
+    "重排序(rerank)",
+    "moderations",
+    "---Audio---",
+    "openai音频(audio)",
+    "realtime",
+    "---Image & Video---",
+    "图片生成",
+    "视频生成",
+    "---Others---",
+    "未实现"
+  ]
+}

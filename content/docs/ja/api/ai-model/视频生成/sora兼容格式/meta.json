@@ -1,0 +1,5 @@
+{
+  "title": "Sora 兼容格式",
+  "description": "Sora 兼容视频生成接口",
+  "pages": ["createVideo", "getVideo", "getVideoContent"]
+}

@@ -1,0 +1,5 @@
+{
+  "title": "文本补全 (Completions)",
+  "description": "OpenAI Completions 兼容接口",
+  "pages": ["createCompletion"]
+}

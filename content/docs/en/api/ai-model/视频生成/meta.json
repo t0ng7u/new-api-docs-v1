@@ -1,0 +1,15 @@
+{
+  "title": "视频生成",
+  "description": "视频生成相关接口",
+  "pages": [
+    "---通用---",
+    "createVideoGeneration",
+    "getVideoGeneration",
+    "---Kling 格式---",
+    "kling格式",
+    "---Sora 兼容格式---",
+    "sora兼容格式",
+    "---即梦格式---",
+    "即梦格式"
+  ]
+}

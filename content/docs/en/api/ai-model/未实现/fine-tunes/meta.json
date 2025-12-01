@@ -1,0 +1,10 @@
+{
+  "title": "微调 (Fine-tunes)",
+  "pages": [
+    "listFineTunes",
+    "createFineTune",
+    "retrieveFineTune",
+    "cancelFineTune",
+    "listFineTuneEvents"
+  ]
+}

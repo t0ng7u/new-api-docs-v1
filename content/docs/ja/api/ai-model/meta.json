@@ -1,0 +1,26 @@
+{
+  "title": "AIモデルAPI",
+  "description": "AIモデル関連のAPIエンドポイント",
+  "icon": "Brain",
+  "pages": [
+    "获取模型列表",
+    "---チャット補完---",
+    "openai格式(chat)",
+    "claude格式(messages)",
+    "gemini格式",
+    "openai格式(responses)",
+    "---テキスト処理---",
+    "文本补全(completions)",
+    "openai格式(embeddings)",
+    "重排序(rerank)",
+    "moderations",
+    "---オーディオ---",
+    "openai音频(audio)",
+    "realtime",
+    "---画像と動画---",
+    "图片生成",
+    "视频生成",
+    "---その他---",
+    "未实现"
+  ]
+}

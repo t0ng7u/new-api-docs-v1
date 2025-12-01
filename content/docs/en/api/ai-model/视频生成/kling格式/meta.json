@@ -1,0 +1,10 @@
+{
+  "title": "Kling 格式",
+  "description": "Kling 视频生成接口",
+  "pages": [
+    "createKlingText2Video",
+    "getKlingText2Video",
+    "createKlingImage2Video",
+    "getKlingImage2Video"
+  ]
+}

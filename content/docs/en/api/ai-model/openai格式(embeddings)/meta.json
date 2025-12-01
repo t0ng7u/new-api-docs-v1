@@ -1,0 +1,5 @@
+{
+  "title": "OpenAI 格式 (Embeddings)",
+  "description": "OpenAI Embeddings 兼容接口",
+  "pages": ["createEmbedding"]
+}

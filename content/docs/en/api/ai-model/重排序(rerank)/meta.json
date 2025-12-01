@@ -1,0 +1,5 @@
+{
+  "title": "重排序 (Rerank)",
+  "description": "文本重排序接口",
+  "pages": ["createRerank"]
+}

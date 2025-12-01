@@ -1,0 +1,5 @@
+{
+  "title": "Gemini 格式",
+  "description": "Google Gemini 兼容接口",
+  "pages": ["geminiRelayV1Beta", "createEngineEmbedding"]
+}

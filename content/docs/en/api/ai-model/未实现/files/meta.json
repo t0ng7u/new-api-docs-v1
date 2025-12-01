@@ -1,0 +1,10 @@
+{
+  "title": "文件管理 (Files)",
+  "pages": [
+    "listFiles",
+    "createFile",
+    "retrieveFile",
+    "deleteFile",
+    "downloadFile"
+  ]
+}
